@@ -30,7 +30,7 @@ public:
   uint64_t w_;
   uint64_t h_;
   real J_;
-  vec3d D_;
+  real D_;
   vec3d B_;
   std::vector<vec3d> lattice_;
 };

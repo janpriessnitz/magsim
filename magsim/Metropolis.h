@@ -19,6 +19,8 @@ public:
 
   SpinLattice lattice_;
   real T_;
+
+  const Config &conf_;
   real deltaSpin_;
   uint64_t equilibrium_E_sample_period_;
   uint64_t equilibrium_E_sample_points_;

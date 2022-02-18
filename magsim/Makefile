@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jp/magsim
+CMAKE_SOURCE_DIR = /home/jp/magsim/magsim
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jp/magsim
+CMAKE_BINARY_DIR = /home/jp/magsim/magsim
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,14 +80,14 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/jp/magsim && $(CMAKE_COMMAND) -E cmake_progress_start /home/jp/magsim/CMakeFiles /home/jp/magsim/magsim/CMakeFiles/progress.marks
-	cd /home/jp/magsim && $(MAKE) -f CMakeFiles/Makefile2 magsim/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jp/magsim/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jp/magsim/magsim/CMakeFiles /home/jp/magsim/magsim/CMakeFiles/progress.marks
+	$(MAKE) -f CMakeFiles/Makefile2 all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jp/magsim/magsim/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/jp/magsim && $(MAKE) -f CMakeFiles/Makefile2 magsim/clean
+	$(MAKE) -f CMakeFiles/Makefile2 clean
 .PHONY : clean
 
 # The main clean target
@@ -97,168 +97,106 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/jp/magsim && $(MAKE) -f CMakeFiles/Makefile2 magsim/preinstall
+	$(MAKE) -f CMakeFiles/Makefile2 preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/jp/magsim && $(MAKE) -f CMakeFiles/Makefile2 magsim/preinstall
+	$(MAKE) -f CMakeFiles/Makefile2 preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/jp/magsim && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-# Convenience name for target.
-magsim/CMakeFiles/magsim.dir/rule:
-	cd /home/jp/magsim && $(MAKE) -f CMakeFiles/Makefile2 magsim/CMakeFiles/magsim.dir/rule
-.PHONY : magsim/CMakeFiles/magsim.dir/rule
+#=============================================================================
+# Target rules for targets named magsim
 
-# Convenience name for target.
-magsim: magsim/CMakeFiles/magsim.dir/rule
-
+# Build rule for target.
+magsim: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 magsim
 .PHONY : magsim
 
 # fast build rule for target.
 magsim/fast:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/build
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/build
 .PHONY : magsim/fast
 
-Cli.o: Cli.cpp.o
-
+# target to build an object file
+Cli.o:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/Cli.o
 .PHONY : Cli.o
 
-# target to build an object file
-Cli.cpp.o:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/Cli.cpp.o
-.PHONY : Cli.cpp.o
-
-Cli.i: Cli.cpp.i
-
+# target to preprocess a source file
+Cli.i:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/Cli.i
 .PHONY : Cli.i
 
-# target to preprocess a source file
-Cli.cpp.i:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/Cli.cpp.i
-.PHONY : Cli.cpp.i
-
-Cli.s: Cli.cpp.s
-
+# target to generate assembly for a file
+Cli.s:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/Cli.s
 .PHONY : Cli.s
 
-# target to generate assembly for a file
-Cli.cpp.s:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/Cli.cpp.s
-.PHONY : Cli.cpp.s
-
-Config.o: Config.cpp.o
-
+# target to build an object file
+Config.o:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/Config.o
 .PHONY : Config.o
 
-# target to build an object file
-Config.cpp.o:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/Config.cpp.o
-.PHONY : Config.cpp.o
-
-Config.i: Config.cpp.i
-
+# target to preprocess a source file
+Config.i:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/Config.i
 .PHONY : Config.i
 
-# target to preprocess a source file
-Config.cpp.i:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/Config.cpp.i
-.PHONY : Config.cpp.i
-
-Config.s: Config.cpp.s
-
+# target to generate assembly for a file
+Config.s:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/Config.s
 .PHONY : Config.s
 
-# target to generate assembly for a file
-Config.cpp.s:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/Config.cpp.s
-.PHONY : Config.cpp.s
-
-Metropolis.o: Metropolis.cpp.o
-
+# target to build an object file
+Metropolis.o:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/Metropolis.o
 .PHONY : Metropolis.o
 
-# target to build an object file
-Metropolis.cpp.o:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/Metropolis.cpp.o
-.PHONY : Metropolis.cpp.o
-
-Metropolis.i: Metropolis.cpp.i
-
+# target to preprocess a source file
+Metropolis.i:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/Metropolis.i
 .PHONY : Metropolis.i
 
-# target to preprocess a source file
-Metropolis.cpp.i:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/Metropolis.cpp.i
-.PHONY : Metropolis.cpp.i
-
-Metropolis.s: Metropolis.cpp.s
-
+# target to generate assembly for a file
+Metropolis.s:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/Metropolis.s
 .PHONY : Metropolis.s
 
-# target to generate assembly for a file
-Metropolis.cpp.s:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/Metropolis.cpp.s
-.PHONY : Metropolis.cpp.s
-
-SpinLattice.o: SpinLattice.cpp.o
-
+# target to build an object file
+SpinLattice.o:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/SpinLattice.o
 .PHONY : SpinLattice.o
 
-# target to build an object file
-SpinLattice.cpp.o:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/SpinLattice.cpp.o
-.PHONY : SpinLattice.cpp.o
-
-SpinLattice.i: SpinLattice.cpp.i
-
+# target to preprocess a source file
+SpinLattice.i:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/SpinLattice.i
 .PHONY : SpinLattice.i
 
-# target to preprocess a source file
-SpinLattice.cpp.i:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/SpinLattice.cpp.i
-.PHONY : SpinLattice.cpp.i
-
-SpinLattice.s: SpinLattice.cpp.s
-
+# target to generate assembly for a file
+SpinLattice.s:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/SpinLattice.s
 .PHONY : SpinLattice.s
 
-# target to generate assembly for a file
-SpinLattice.cpp.s:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/SpinLattice.cpp.s
-.PHONY : SpinLattice.cpp.s
-
-Util.o: Util.cpp.o
-
+# target to build an object file
+Util.o:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/Util.o
 .PHONY : Util.o
 
-# target to build an object file
-Util.cpp.o:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/Util.cpp.o
-.PHONY : Util.cpp.o
-
-Util.i: Util.cpp.i
-
+# target to preprocess a source file
+Util.i:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/Util.i
 .PHONY : Util.i
 
-# target to preprocess a source file
-Util.cpp.i:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/Util.cpp.i
-.PHONY : Util.cpp.i
-
-Util.s: Util.cpp.s
-
-.PHONY : Util.s
-
 # target to generate assembly for a file
-Util.cpp.s:
-	cd /home/jp/magsim && $(MAKE) -f magsim/CMakeFiles/magsim.dir/build.make magsim/CMakeFiles/magsim.dir/Util.cpp.s
-.PHONY : Util.cpp.s
+Util.s:
+	$(MAKE) -f CMakeFiles/magsim.dir/build.make CMakeFiles/magsim.dir/Util.s
+.PHONY : Util.s
 
 # Help Target
 help:
@@ -295,6 +233,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/jp/magsim && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

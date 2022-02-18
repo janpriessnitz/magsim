@@ -3,6 +3,9 @@ set ( MAGSIM_SOURCES
     SpinLattice.cpp
     Util.cpp
     Config.cpp
+    MapReader.cpp
+    ConfigReader.cpp
+    TupleReader.cpp
 )
 
 add_executable(magsim Cli.cpp ${MAGSIM_SOURCES})

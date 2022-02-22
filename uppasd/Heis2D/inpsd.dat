@@ -1,0 +1,48 @@
+simid     HeisDM2D
+ncell     48        48        1               System size
+BC        P         P         0                 Boundary conditions (0=vacuum,P=periodic)
+cell      1.00000   0.00000   0.00000
+          0.00000   1.00000   0.00000
+          0.00000   0.00000   1.00000
+Sym       0                                     Symmetry of lattice (0 for no, 1 for cubic, 2 for 2d cubic, 3 for hexagonal)
+
+posfile   ./posfile
+exchange  ./jfile
+momfile   ./momfile
+dm        ./dmfile
+do_prnstruct 1                                  Print lattice structure (0=no, 1=yes)
+
+Mensemble 1                                     Number of samples in ensemble averaging
+Initmag   1                                     (1=random, 2=cone, 3=spec., 4=file)
+restartfile ./start.1q
+
+ip_mode   H                                     Initial phase parameters
+ip_temp 300
+ip_mcnstep 5
+ip_mcanneal 7
+1000 300
+1000 100
+1000 25
+1000 10
+1000 5
+1000 2
+1000 1
+
+
+mode      H                                     S=SD, M=MC
+temp      1                                Measurement phase parameters
+mcnstep     10                                 --
+
+do_avrg   Y                                     Measure averages
+avrg_step 100
+
+do_tottraj Y                                    Measure moments
+tottraj_step   10
+
+qpoints F                                       Flag for q-point generation (F=file,A=automatic,C=full cell)
+qfile   ./qfile
+
+do_ams Y
+do_magdos Y
+
+plotenergy 1

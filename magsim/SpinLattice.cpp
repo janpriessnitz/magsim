@@ -27,10 +27,8 @@ void SpinLattice::set(int64_t x, int64_t y, vec3d spin) {
 
 uint64_t SpinLattice::index(int64_t x, int64_t y) {
   // periodic coordinates
-  x = x % w_;
-  x = (x >= 0) ? x : (x + w_);
-  y = y % h_;
-  y = (y >= 0) ? y : (y + h_);
+  x = (x + w_) % w_;
+  y = (y + h_) % h_;
   return x + y*w_;
 }
 
@@ -40,8 +38,12 @@ real SpinLattice::getEnergy() {
     for (int64_t y = 0; y < h_; ++y) {
       E += -J_*scal_prod(get(x, y), get(x+1, y));
       E += -J_*scal_prod(get(x, y), get(x, y+1));
+      E += -J_*scal_prod(get(x, y), get(x-1, y));
+      E += -J_*scal_prod(get(x, y), get(x, y-1));
       E += -scal_prod({0, D_, 0}, vec_prod(get(x, y), get(x+1, y)));
-      E += -scal_prod({D_, 0, 0}, vec_prod(get(x, y), get(x, y+1)));
+      E += -scal_prod({0, -D_, 0}, vec_prod(get(x, y), get(x-1, y)));
+      E += -scal_prod({-D_, 0, 0}, vec_prod(get(x, y), get(x, y+1)));
+      E += -scal_prod({D_, 0, 0}, vec_prod(get(x, y), get(x, y-1)));
       E += -scal_prod(B_, get(x, y));
     }
   }
@@ -55,9 +57,9 @@ real SpinLattice::getEnergyDelta(int64_t x, int64_t y, vec3d newspin) {
   deltaE += -J_*scal_prod(newspin, get(x-1, y));
   deltaE += -J_*scal_prod(newspin, get(x, y-1));
   deltaE += -scal_prod({0, D_, 0}, vec_prod(newspin, get(x+1, y)));
-  deltaE += -scal_prod({D_, 0, 0}, vec_prod(newspin, get(x, y+1)));
-  deltaE += -scal_prod({0, D_, 0}, vec_prod(get(x-1, y), newspin));
-  deltaE += -scal_prod({D_, 0, 0}, vec_prod(get(x, y-1), newspin));
+  deltaE += -scal_prod({0, -D_, 0}, vec_prod(newspin, get(x-1, y)));
+  deltaE += -scal_prod({-D_, 0, 0}, vec_prod(newspin, get(x, y+1)));
+  deltaE += -scal_prod({D_, 0, 0}, vec_prod(newspin, get(x, y-1)));
   deltaE += -scal_prod(B_, newspin);
 
   deltaE -= -J_*scal_prod(get(x, y), get(x+1, y));
@@ -65,9 +67,9 @@ real SpinLattice::getEnergyDelta(int64_t x, int64_t y, vec3d newspin) {
   deltaE -= -J_*scal_prod(get(x, y), get(x-1, y));
   deltaE -= -J_*scal_prod(get(x, y), get(x, y-1));
   deltaE -= -scal_prod({0, D_, 0}, vec_prod(get(x, y), get(x+1, y)));
-  deltaE -= -scal_prod({D_, 0, 0}, vec_prod(get(x, y), get(x, y+1)));
-  deltaE -= -scal_prod({0, D_, 0}, vec_prod(get(x-1, y), get(x, y)));
-  deltaE -= -scal_prod({D_, 0, 0}, vec_prod(get(x, y-1), get(x, y)));
+  deltaE -= -scal_prod({0, -D_, 0}, vec_prod(get(x, y), get(x-1, y)));
+  deltaE -= -scal_prod({-D_, 0, 0}, vec_prod(get(x, y), get(x, y+1)));
+  deltaE -= -scal_prod({D_, 0, 0}, vec_prod(get(x, y), get(x, y-1)));
   deltaE -= -scal_prod(B_, get(x, y));
   return deltaE;
 }

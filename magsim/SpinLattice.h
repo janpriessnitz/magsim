@@ -23,7 +23,7 @@ public:
   real getEnergy();
   real getEnergyDelta(int64_t x, int64_t y, vec3d newspin);
 
-  void dump(std::string filename);
+  void dump(std::string filename, real T);
 
   void init_random();
 

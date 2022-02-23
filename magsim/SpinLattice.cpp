@@ -38,12 +38,8 @@ real SpinLattice::getEnergy() {
     for (int64_t y = 0; y < h_; ++y) {
       E += -J_*scal_prod(get(x, y), get(x+1, y));
       E += -J_*scal_prod(get(x, y), get(x, y+1));
-      E += -J_*scal_prod(get(x, y), get(x-1, y));
-      E += -J_*scal_prod(get(x, y), get(x, y-1));
       E += -scal_prod({0, D_, 0}, vec_prod(get(x, y), get(x+1, y)));
-      E += -scal_prod({0, -D_, 0}, vec_prod(get(x, y), get(x-1, y)));
       E += -scal_prod({-D_, 0, 0}, vec_prod(get(x, y), get(x, y+1)));
-      E += -scal_prod({D_, 0, 0}, vec_prod(get(x, y), get(x, y-1)));
       E += -scal_prod(B_, get(x, y));
     }
   }
@@ -74,9 +70,9 @@ real SpinLattice::getEnergyDelta(int64_t x, int64_t y, vec3d newspin) {
   return deltaE;
 }
 
-void SpinLattice::dump(std::string filename) {
+void SpinLattice::dump(std::string filename, real T) {
   FILE *fp = fopen(filename.c_str(), "w");
-  fprintf(fp, "%ld %ld %le\n", w_, h_, getEnergy());
+  fprintf(fp, "%ld %ld %le %le\n", w_, h_, getEnergy(), T);
   for (uint64_t i; i < w_*h_; ++i) {
     fprintf(fp, "%lf %lf %lf\n", std::get<0>(lattice_[i]), std::get<1>(lattice_[i]), std::get<2>(lattice_[i]));
   }

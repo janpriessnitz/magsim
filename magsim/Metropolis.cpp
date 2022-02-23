@@ -48,7 +48,7 @@ void Metropolis::equilibrize() {
         do_step();
       }
       real curE = lattice_.getEnergy();
-      fprintf(E_history_fp_, "%lf %lf\n", T_, curE); 
+      fprintf(E_history_fp_, "%lf %lf\n", T_, curE);
   }
 }
 

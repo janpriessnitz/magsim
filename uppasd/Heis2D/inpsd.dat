@@ -1,5 +1,5 @@
 simid     HeisDM2D
-ncell     48        48        1               System size
+ncell     200       200       1               System size
 BC        P         P         0                 Boundary conditions (0=vacuum,P=periodic)
 cell      1.00000   0.00000   0.00000
           0.00000   1.00000   0.00000
@@ -20,13 +20,13 @@ ip_mode   H                                     Initial phase parameters
 ip_temp 300
 ip_mcnstep 5
 ip_mcanneal 7
-1000 300
-1000 100
-1000 25
-1000 10
-1000 5
-1000 2
-1000 1
+5000 300
+5000 100
+5000 25
+5000 10
+5000 5
+5000 2
+5000 1
 
 
 mode      H                                     S=SD, M=MC

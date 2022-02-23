@@ -12,9 +12,9 @@ int main(int argc, char **argv) {
   for (int j = 0; j < conf.T_steps; ++j) {
     sim.equilibrize();
     printf("T %le E %le\n", sim.T_, sim.lattice_.getEnergy());
-    sim.T_ *= conf.T_step_ratio;
-    sim.lattice_.dump("lattice.dump" + std::to_string(j));
+    sim.lattice_.dump("lattice.dump" + std::to_string(j), sim.T_);
 
+    sim.T_ *= conf.T_step_ratio;
   }
   return 0;
 }

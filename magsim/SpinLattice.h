@@ -22,6 +22,7 @@ public:
 
   real getEnergy();
   real getEnergyDelta(int64_t x, int64_t y, vec3d newspin);
+  vec3d getLocalField(int64_t x, int64_t y);
 
   void dump(std::string filename, real T);
 

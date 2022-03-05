@@ -1,4 +1,5 @@
 set ( MAGSIM_SOURCES
+    HeatBath.cpp
     Metropolis.cpp
     SpinLattice.cpp
     Util.cpp

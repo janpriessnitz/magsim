@@ -17,7 +17,7 @@ public:
   real T_step_ratio = 0.95;
   uint64_t T_steps = 100;
   real deltaSpin = 0.1;
-  
+
   uint64_t metropolis_reporting_macrostep = 100000;
   uint64_t metropolis_equilibrium_macrosteps = 100;
 

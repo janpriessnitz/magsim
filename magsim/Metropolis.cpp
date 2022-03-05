@@ -44,11 +44,13 @@ void Metropolis::equilibrize() {
   //   if (is_in_equilibrium(E_history)) return;
   // }
   for (int i = 0; i < conf_.metropolis_equilibrium_macrosteps; ++i) {
+      uint32_t accepted_steps = 0;
       for (int j = 0; j < conf_.metropolis_reporting_macrostep; ++j) {
-        do_step();
+        real deltaE = do_step();
+        if (deltaE != 0) ++accepted_steps;
       }
       real curE = lattice_.getEnergy();
-      fprintf(E_history_fp_, "%lf %lf\n", T_, curE);
+      fprintf(E_history_fp_, "%lf %lf %lf\n", T_, curE, accepted_steps/(real)conf_.metropolis_reporting_macrostep);
   }
 }
 

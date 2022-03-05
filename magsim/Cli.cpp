@@ -1,6 +1,7 @@
 
 #include "ConfigReader.h"
 #include "Metropolis.h"
+#include "HeatBath.h"
 
 #include <cstdio>
 #include <string>
@@ -8,7 +9,7 @@
 int main(int argc, char **argv) {
   ConfigReader c(argv[1]);
   Config conf = c.ReadConfig();
-  Metropolis sim(conf);
+  HeatBath sim(conf);
   for (int j = 0; j < conf.T_steps; ++j) {
     sim.equilibrize();
     printf("T %le E %le\n", sim.T_, sim.lattice_.getEnergy());

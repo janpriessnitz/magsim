@@ -67,7 +67,18 @@ real SpinLattice::getEnergyDelta(int64_t x, int64_t y, vec3d newspin) {
   deltaE -= -scal_prod({-D_, 0, 0}, vec_prod(get(x, y), get(x, y+1)));
   deltaE -= -scal_prod({D_, 0, 0}, vec_prod(get(x, y), get(x, y-1)));
   deltaE -= -scal_prod(B_, get(x, y));
+
+  vec3d F = getLocalField(x, y);
+  real deltaE2 = scal_prod(F, newspin) - scal_prod(F, get(x, y));
   return deltaE;
+}
+
+vec3d SpinLattice::getLocalField(int64_t x, int64_t y) {
+  vec3d F = {0,0,0};
+  F = F - J_*(get(x+1, y) + get(x-1, y) + get(x, y+1) + get(x, y-1));
+  F = F - D_*(vec_prod(get(x+1, y), {0, 1, 0}) + vec_prod(get(x-1, y), {0, -1, 0}) + vec_prod(get(x, y+1), {-1, 0, 0}) + vec_prod(get(x, y-1), {1, 0, 0}));
+  F = F - B_;
+  return F;
 }
 
 void SpinLattice::dump(std::string filename, real T) {

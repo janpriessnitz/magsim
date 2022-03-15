@@ -1,0 +1,60 @@
+simid  SK2D_200
+ncell  200 200 1
+BC        P         P         0                 Boundary conditions (0=vacuum,P=periodic)
+cell      1.00000   0.00000   0.00000
+          0.00000   1.00000   0.00000
+          0.00000   0.00000   1.00000
+Sym       1                                     Symmetry of lattice (0 for no, 1 for cubic, 2 for 2d cubic, 3 for hexagonal)
+
+aunits N
+maptype 1
+
+posfile    ./posfile
+exchange   ./jfile
+momfile    ./momfile
+dm         ./dmfile
+
+do_prnstruct 1
+
+Mensemble 5
+Initmag   1                                     (1=random, 2=cone, 3=spec., 4=file)
+
+mseed 19087
+tseed 98012
+
+ip_mode H
+ip_hfield  0.000 0.000 0.000
+ip_mcanneal 18
+500000 200
+500000 160
+500000 140
+500000 120
+500000 100
+500000 90
+1000000 80
+1000000 70
+1000000 60
+1000000 50
+1000000 40
+1000000 30
+1000000 20
+1000000 10
+1000000 8
+1000000 6
+1500000 4
+1500000 2
+
+mode      H                                    S=SD, M=MC
+hfield    0.000 0.000 0.000                    External magnetic field
+temp      1                                    Measurement phase parameters
+mcNstep   2000000
+
+do_avrg   Y                                     Measure averages
+avrg_step 100 
+
+do_tottraj N                                    Measure moments
+tottraj_step       100
+tottraj_buff       10                           time step, buffer size
+
+plotenergy 1                                    Calculate energy of the system projected on the different Hamiltonian components
+

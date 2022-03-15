@@ -1,0 +1,85 @@
+#  UppASD Input data 
+simid:
+                    SK2D_200
+  
+# Physical constants
+Boltzman constant:
+                      1.38064852E-23
+Bohr magneton:
+                      9.27400999E-24
+ 
+# Structure data
+ncell:
+                    200  200  1
+BC:
+                    P  P  0
+cell:
+                     1.00000000E+00 0.00000000E+00 0.00000000E+00
+                     0.00000000E+00 1.00000000E+00 0.00000000E+00
+                     0.00000000E+00 0.00000000E+00 1.00000000E+00
+positions:
+                    1  1   0.00000000E+00 0.00000000E+00 0.00000000E+00
+NA:
+                    1
+NT:
+                    1
+Sym:
+                    1
+Natom:
+                    40000
+  
+# Simulation parameters
+LLG:
+                    1
+SDE:
+                    1
+Mensemble:
+                    5
+ 
+# Initial magnetization
+initmag:
+                    1
+    
+**************** Rotation parameters            ****************
+Rotation                       0
+Rotation Angle    0.00000000E+00  0.00000000E+00  0.00000000E+00
+  
+**************** Demagnetization field          ****************
+Demag                          N               N               N
+Demag                          N
+Volume            0.00000000E+00
+  
+**************** Micro-wave field               ****************
+  
+**************** Initial phase                  ****************
+MC, SD, EM                       H
+Field             0.00000000E+00  0.00000000E+00  0.00000000E+00
+nphase                        18
+MC steps, T :
+             500  2.00000000E+02
+             500  1.60000000E+02
+             500  1.40000000E+02
+             500  1.20000000E+02
+             500  1.00000000E+02
+             500  9.00000000E+01
+            1000  8.00000000E+01
+            1000  7.00000000E+01
+            1000  6.00000000E+01
+            1000  5.00000000E+01
+            1000  4.00000000E+01
+            1000  3.00000000E+01
+            1000  2.00000000E+01
+            1000  1.00000000E+01
+            1000  8.00000000E+00
+            1000  6.00000000E+00
+            1000  4.00000000E+00
+            1000  2.00000000E+00
+ 
+**************** Measurement phase              ****************
+MC, SD, MEP                         H
+Gradient				 N
+T                 1.00000000E+00
+Field             0.00000000E+00  0.00000000E+00  0.00000000E+00
+   
+Tottraj                        N             100              10
+No. trajectories               0

@@ -1,18 +1,20 @@
 #ifndef METROPOLIS_H
 #define METROPOLIS_H
 
+#include "Simulation.h"
 #include "Config.h"
 #include "SpinLattice.h"
 
-class Metropolis {
+class Metropolis : public Simulation {
 public:
   Metropolis(const Config &conf);
   ~Metropolis();
 
-  real do_step();
-  void equilibrize();
+  real doStep();
+  SpinLattice* getLattice();
+  void setT(real T);
+  real getT();
 
-  bool is_in_equilibrium(const std::vector<real>& Es);
 
   real get_probability(real deltaE);
   bool should_accept(real deltaE);

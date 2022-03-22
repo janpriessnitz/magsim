@@ -5,7 +5,6 @@
 HeatBath::HeatBath(const Config& conf)
   : lattice_(conf)
   , conf_(conf)
-  , T_(conf.T_init)
 {
   // E_history_fp_ = fopen("Ehistory.out", "w");
 }
@@ -15,7 +14,19 @@ HeatBath::~HeatBath() {
 }
 
 
-real HeatBath::do_step() {
+void HeatBath::setT(real T) {
+  T_ = T;
+}
+
+real HeatBath::getT() {
+  return T_;
+}
+
+SpinLattice* HeatBath::getLattice() {
+  return &lattice_;
+}
+
+real HeatBath::doStep() {
   int64_t rx = rnd_int(0, lattice_.w_);
   int64_t ry = rnd_int(0, lattice_.h_);
   vec3d oldSpin = lattice_.get(rx, ry);
@@ -27,7 +38,13 @@ real HeatBath::do_step() {
   real Rprime = rnd_uni(0, 1);
 
   real phi = Rprime*2*M_PI;
-  real costheta = -1/(magfield*beta)*log(exp(magfield*beta)*(1 - R) + R*exp(-magfield*beta));
+  real costheta;
+  if (magfield*beta > 500) {
+    // prevents overflow in exp function
+    costheta = -1/(magfield*beta)*(magfield*beta + log(1-R));
+  } else {
+    costheta = -1/(magfield*beta)*log(exp(magfield*beta)*(1 - R) + R*exp(-magfield*beta));
+  }
   // printf("costhetaprime %lf\n", costheta);
   real sintheta = sqrt(1 - costheta*costheta);
   real cosphi = cos(phi);
@@ -62,24 +79,4 @@ real HeatBath::do_step() {
   // );
 
   return scal_prod(newSpin, field) - scal_prod(oldSpin, field);
-}
-
-void HeatBath::equilibrize() {
-  // std::vector<real> E_history(equilibrium_E_sample_points_);
-  // E_history[equilibrium_E_sample_points_ - 1] = 1e9;  // hack
-  // for(int i = 0; ; i = (i + 1) % equilibrium_E_sample_points_) {
-  //   for(int j = 0; j < equilibrium_E_sample_period_; ++j) {
-  //     do_step();
-  //   }
-  //   real curE = lattice_.getEnergy();
-  //   fprintf(E_history_fp_, "%lf %lf\n", T_, curE);
-  //   E_history[i] = curE;
-  //   printf("E %lf, T %lf\n", lattice_.getEnergy(), T_);
-  //   if (is_in_equilibrium(E_history)) return;
-  // }
-  for (int i = 0; i < conf_.metropolis_equilibrium_macrosteps; ++i) {
-      for (int j = 0; j < conf_.metropolis_reporting_macrostep; ++j) {
-        real deltaE = do_step();
-      }
-  }
 }

@@ -50,3 +50,7 @@ long long TupleReader::GetInt(size_t r, size_t c) {
 double TupleReader::GetDouble(size_t r, size_t c) {
   return strtod(data[r][c].c_str(), nullptr);
 }
+
+size_t TupleReader::NumRows() {
+  return data.size();
+}

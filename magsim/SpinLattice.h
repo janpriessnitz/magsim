@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-
+#include <cstdio>
 
 #include "Config.h"
 #include "Util.h"
@@ -24,7 +24,7 @@ public:
   real getEnergyDelta(int64_t x, int64_t y, vec3d newspin);
   vec3d getLocalField(int64_t x, int64_t y);
 
-  void dump(std::string filename, real T);
+  void dump(real T, uint64_t steps_total);
 
   void init_random();
 
@@ -34,6 +34,7 @@ public:
   real D_;
   vec3d B_;
   std::vector<vec3d> lattice_;
+  FILE *dump_file_;
 };
 
 #endif // SIMULATION_H

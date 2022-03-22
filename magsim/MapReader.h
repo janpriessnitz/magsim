@@ -11,6 +11,7 @@ public:
   std::string GetString(const std::string &key);
   long long int GetInt(const std::string &key);
   double GetFloat(const std::string &key);
+  char GetChar(const std::string &key);
 
   std::map<std::string, std::string> data_map;
 };

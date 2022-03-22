@@ -10,11 +10,13 @@ SpinLattice::SpinLattice(const Config &conf)
   , D_(conf.D)
   , B_(conf.B)
 {
+  dump_file_ = fopen(conf.lattice_dump_file.c_str(), "w");
   lattice_.resize(w_*h_);
   init_random();
 }
 
 SpinLattice::~SpinLattice() {
+  fclose(dump_file_);
 }
 
 vec3d SpinLattice::get(int64_t x, int64_t y) {
@@ -81,13 +83,11 @@ vec3d SpinLattice::getLocalField(int64_t x, int64_t y) {
   return F;
 }
 
-void SpinLattice::dump(std::string filename, real T) {
-  FILE *fp = fopen(filename.c_str(), "w");
-  fprintf(fp, "%ld %ld %le %le\n", w_, h_, getEnergy(), T);
+void SpinLattice::dump(real T, uint64_t steps_total) {
+  fprintf(dump_file_, "%ld %ld %le %le %lu\n", w_, h_, getEnergy(), T, steps_total);
   for (uint64_t i; i < w_*h_; ++i) {
-    fprintf(fp, "%lf %lf %lf\n", std::get<0>(lattice_[i]), std::get<1>(lattice_[i]), std::get<2>(lattice_[i]));
+    fprintf(dump_file_, "%lf %lf %lf\n", std::get<0>(lattice_[i]), std::get<1>(lattice_[i]), std::get<2>(lattice_[i]));
   }
-  fclose(fp);
 }
 
 

@@ -6,7 +6,6 @@
 Metropolis::Metropolis(const Config& conf)
   : lattice_(conf)
   , conf_(conf)
-  , T_(conf.T_init)
 {
   E_history_fp_ = fopen("Ehistory.out", "w");
 }
@@ -15,7 +14,19 @@ Metropolis::~Metropolis() {
   fclose(E_history_fp_);
 }
 
-real Metropolis::do_step() {
+void Metropolis::setT(real T) {
+  T_ = T;
+}
+
+real Metropolis::getT() {
+  return T_;
+}
+
+SpinLattice *Metropolis::getLattice() {
+  return &lattice_;
+}
+
+real Metropolis::doStep() {
   int64_t rx = rnd_int(0, lattice_.w_);
   int64_t ry = rnd_int(0, lattice_.h_);
   vec3d oldSpin = lattice_.get(rx, ry);
@@ -29,41 +40,6 @@ real Metropolis::do_step() {
   }
   return 0;
 }
-
-void Metropolis::equilibrize() {
-  // std::vector<real> E_history(equilibrium_E_sample_points_);
-  // E_history[equilibrium_E_sample_points_ - 1] = 1e9;  // hack
-  // for(int i = 0; ; i = (i + 1) % equilibrium_E_sample_points_) {
-  //   for(int j = 0; j < equilibrium_E_sample_period_; ++j) {
-  //     do_step();
-  //   }
-  //   real curE = lattice_.getEnergy();
-  //   fprintf(E_history_fp_, "%lf %lf\n", T_, curE);
-  //   E_history[i] = curE;
-  //   printf("E %lf, T %lf\n", lattice_.getEnergy(), T_);
-  //   if (is_in_equilibrium(E_history)) return;
-  // }
-  for (int i = 0; i < conf_.metropolis_equilibrium_macrosteps; ++i) {
-      uint32_t accepted_steps = 0;
-      for (int j = 0; j < conf_.metropolis_reporting_macrostep; ++j) {
-        real deltaE = do_step();
-        if (deltaE != 0) ++accepted_steps;
-      }
-      real curE = lattice_.getEnergy();
-      fprintf(E_history_fp_, "%lf %lf %lf\n", T_, curE, accepted_steps/(real)conf_.metropolis_reporting_macrostep);
-  }
-}
-
-// bool Metropolis::is_in_equilibrium(const std::vector<real>& Es) {
-//   real Emax = -1e9, Emin = 1e9;  // hacks
-//   for (int i = 0; i < equilibrium_E_sample_points_; ++i) {
-//     if (Es[i] > Emax) Emax = Es[i];
-//     if (Es[i] < Emin) Emin = Es[i];
-//   }
-//   real Espread = Emax - Emin;
-//   return Espread < equilibrium_E_spread_thresh_;
-// }
-
 
 real Metropolis::get_probability(real deltaE) {
   return (deltaE <= 0) ? 1 : exp(-deltaE/T_);

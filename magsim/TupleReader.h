@@ -17,6 +17,7 @@ public:
 
   long long GetInt(size_t r, size_t c);
   double GetDouble(size_t r, size_t c);
+  size_t NumRows();
 
   std::vector<std::vector<std::string>> data;
 

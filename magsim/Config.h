@@ -2,32 +2,26 @@
 #define CONFIG_H
 
 #include <cstdint>
+#include <vector>
+#include <tuple>
 
 #include "Util.h"
 
+typedef std::tuple<real, uint64_t, uint64_t> annealing_step_t;
+typedef std::vector<annealing_step_t> annealing_sched_t;
+
 class Config {
 public:
+  char method = 'H';   // 'H' for heatbath, 'M' for metropolis
   uint64_t lattice_w = 48;
   uint64_t lattice_h = 48;
 
   real J = 1;
   real D = 1.4;
   vec3d B = {0, 0, 0.5};
-  real T_init = 3;
-  real T_step_ratio = 0.95;
-  uint64_t T_steps = 100;
+  annealing_sched_t annealing_sched;  // temperature, number of steps, reporting period
   real deltaSpin = 0.1;
-
-  uint64_t metropolis_reporting_macrostep = 100000;
-  uint64_t metropolis_equilibrium_macrosteps = 100;
-
-
-  // NOT USED CURRENTLY - adaptive Metropolis equilibrium
-  uint64_t equilibrium_E_sample_period = 100000;
-  uint64_t equilibrium_E_sample_points = 10;
-  real equilibrium_E_spread_thresh = 30;
-
-
+  std::string lattice_dump_file;
 };
 
 #endif // UTIL_H

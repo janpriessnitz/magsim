@@ -18,3 +18,7 @@ long long int MapReader::GetInt(const std::string &key) {
 double MapReader::GetFloat(const std::string &key) {
   return std::strtod(GetString(key).c_str(), nullptr);
 }
+
+char MapReader::GetChar(const std::string &key) {
+  return GetString(key)[0];
+}

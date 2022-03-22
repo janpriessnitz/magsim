@@ -9,6 +9,9 @@ public:
   ConfigReader(const std::string &filename);
   Config ReadConfig();
 
+private:
+  annealing_sched_t ReadAnnealingSched(std::string filename);
+
   std::string filename_;
 };
 

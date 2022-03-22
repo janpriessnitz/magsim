@@ -1,18 +1,21 @@
 #ifndef HEATBATH_H
 #define HEATBATH_H
 
+#include "Simulation.h"
 #include "Config.h"
 #include "SpinLattice.h"
 
 
-class HeatBath {
+class HeatBath : public Simulation {
 public:
   HeatBath(const Config &conf);
   ~HeatBath();
 
-  real do_step();
-  void equilibrize();
-
+  void setT(real T);
+  real getT();
+  SpinLattice* getLattice();
+  real doStep();
+  
   SpinLattice lattice_;
   real T_;
 

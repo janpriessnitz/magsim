@@ -4,3 +4,5 @@ build/
 uppasd/*/*.out
 uppasd/*/meminfo
 uppasd/*/inpsd.yaml
+
+Makefile

@@ -6,3 +6,11 @@ uppasd/*/meminfo
 uppasd/*/inpsd.yaml
 
 Makefile
+.vscode/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.out
+
+magsim/magsim
+magsim2/magsim2

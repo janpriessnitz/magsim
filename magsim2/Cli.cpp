@@ -1,43 +1,32 @@
 
 #include "ConfigReader.h"
-#include "Metropolis.h"
-#include "HeatBath.h"
+#include "SpinDynamics.h"
+#include "LatticeGenerator.h"
 
 #include <cstdio>
 #include <string>
 
 int main(int argc, char **argv) {
-  ConfigReader c(argv[1]);
-  Config conf = c.ReadConfig();
-  Simulation* sim;
-  switch(conf.method) {
-    case 'H':
-      sim = new HeatBath(conf);
-      break;
-    case 'M':
-      sim = new Metropolis(conf);
-      break;
-    default:
-      fprintf(stderr, "unrecognized method in config file: %c", conf.method);
-      return 1;
-  }
-  uint64_t steps_total = 0;
-  for (int tstep = 0; tstep < conf.annealing_sched.size(); ++tstep) {
-    uint64_t steps_T = 0;
+  // ConfigReader c(argv[1]);
+  // Config conf = c.ReadConfig();
+  printf("main\n");
 
-    real T;
-    uint64_t steps, reporting_period;
-    std::tie(T, steps, reporting_period) = conf.annealing_sched[tstep];
-    sim->setT(T);
-    for (int i = 0; i < steps; ++i) {
-      sim->doStep();
-      ++steps_total;
-      ++steps_T;
-      if (reporting_period != 0 && steps_T % reporting_period == 0) {
-        printf("T %le E %le\n", sim->getT(), sim->getLattice()->getEnergy());
-        sim->getLattice()->dump(sim->getT(), steps_total);
-      }
+  HcpCobaltGenerator gen;
+  SpinLattice lat = gen.Generate();
+  SpinDynamics* dyn = new SpinDynamics(&lat);
+
+  lat.DumpExchange("exchange.out");
+  lat.DumpPositions("positions.out");
+
+  for (int j = 0; j < 100; ++j) {
+    for (int i = 0; i < 10000; ++i) {
+      dyn->DoStep();
     }
+    real x, y, z;
+    std::tie(x, y, z) = dyn->lattice_->AvgM();
+    printf("%lf %lf %lf\n", x, y, z);
   }
+  dyn->lattice_->DumpLattice("lattice.out");
+  dyn->lattice_->DumpHeffs("heffs.out");
   return 0;
 }

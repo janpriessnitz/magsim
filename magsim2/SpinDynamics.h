@@ -1,25 +1,26 @@
 #ifndef SPINDYNAMICS_H
 #define SPINDYNAMICS_H
 
-#include "Simulation.h"
-#include "Config.h"
 #include "SpinLattice.h"
 
 
-class SpinDynamics : public Simulation {
+class SpinDynamics {
 public:
-  SpinDynamics(const Config &conf);
+  static constexpr real kGyromagneticRatio = 1;
+
+  explicit SpinDynamics(SpinLattice *lattice);
   ~SpinDynamics();
 
-  void setT(real T);
-  real getT();
-  SpinLattice* getLattice();
-  real doStep();
+  void DoStep();
 
-  SpinLattice lattice_;
-  real T_;
+  vec3d TemperatureField();
 
-  const Config &conf_;
+  SpinLattice* lattice_;
+
+  real temperature_;
+  real alpha_ = 0.1;
+  // real timestep_ = 1e-16;
+  real timestep_ = 1e-03;
 };
 
 #endif

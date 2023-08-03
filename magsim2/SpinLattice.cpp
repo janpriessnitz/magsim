@@ -71,8 +71,7 @@ SpinLattice SpinLattice::GenerateFefcc() {
 void SpinLattice::DumpLattice(const std::string &fname) const {
   FILE *fp = fopen(fname.c_str(), "w");
   for (size_t i = 0; i < spins_.size(); ++i) {
-    real x, y, z;
-    std::tie(x, y, z) = spins_[i];
+    auto [x, y, z] = spins_[i];
     fprintf(fp, "%lf %lf %lf %lf\n", x, y, z, mag(spins_[i]));
   }
   fclose(fp);
@@ -81,8 +80,7 @@ void SpinLattice::DumpLattice(const std::string &fname) const {
 void SpinLattice::DumpHeffs(const std::string &fname) const {
   FILE *fp = fopen(fname.c_str(), "w");
   for (size_t i = 0; i < Heffs_.size(); ++i) {
-    real x, y, z;
-    std::tie(x, y, z) = Heffs_[i];
+    auto [x, y, z] = Heffs_[i];
     fprintf(fp, "%lf %lf %lf %lf\n", x, y, z, mag(Heffs_[i]));
   }
   fclose(fp);
@@ -91,8 +89,7 @@ void SpinLattice::DumpHeffs(const std::string &fname) const {
 void SpinLattice::DumpPositions(const std::string &fname) const {
   FILE *fp = fopen(fname.c_str(), "w");
   for (size_t i = 0; i < positions_.size(); ++i) {
-    real x, y, z;
-    std::tie(x, y, z) = positions_[i];
+    auto [x, y, z] = positions_[i];
     fprintf(fp, "%lf %lf %lf\n", x, y, z);
   }
   fclose(fp);
@@ -102,9 +99,7 @@ void SpinLattice::DumpExchange(const std::string &fname) const {
   FILE *fp = fopen(fname.c_str(), "w");
   for (size_t i = 0; i < exchange_.size(); ++i) {
     for (size_t j = 0; j < exchange_[i].size(); ++j) {
-      size_t partner_ind;
-      real int_energy;
-      std::tie(partner_ind, int_energy) = exchange_[i][j];
+      auto [partner_ind, int_energy] = exchange_[i][j];
       fprintf(fp, "%lu %lu %lf\n", i, partner_ind, int_energy);
     }
   }
@@ -135,13 +130,31 @@ void SpinLattice::ComputeExch() {
   for (size_t i = 0; i < spins_.size(); ++i) {
     vec3d J_field = {0, 0, 0};
     for (size_t j = 0; j < exchange_[i].size(); ++j) {
-      size_t spin_ind;
-      real J;
-      std::tie(spin_ind, J) = exchange_[i][j];
-      J_field = J_field + J*spins_[spin_ind];
+      auto [spin_ind, J] = exchange_[i][j];
+      J_field = J_field - J*spins_[spin_ind];
     }
     Heffs_[i] = Heffs_[i] + J_field;
   }
+}
+
+void SpinLattice::PrintEnergy() const {
+  real anis_en = 0;
+  for (size_t i = 0; i < spins_.size(); ++i) {
+    real zmag = std::get<2>(spins_[i]);
+    anis_en += anisotropy_*zmag*zmag;
+  }
+  anis_en /= spins_.size();
+
+  real exch_en = 0;
+  for (size_t i = 0; i < spins_.size(); ++i) {
+    vec3d J_field = {0, 0, 0};
+    for (size_t j = 0; j < exchange_[i].size(); ++j) {
+      auto [spin_ind, J] = exchange_[i][j];
+      exch_en -= J*scal_prod(spins_[i], spins_[spin_ind]);
+    }
+  }
+  exch_en /= spins_.size();
+  printf("anis: %lg, exch: %lg\n", anis_en, exch_en);
 }
 
 vec3d SpinLattice::AvgM() const {

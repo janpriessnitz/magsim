@@ -9,7 +9,6 @@
 int main(int argc, char **argv) {
   // ConfigReader c(argv[1]);
   // Config conf = c.ReadConfig();
-  printf("main\n");
 
   HcpCobaltGenerator gen;
   SpinLattice lat = gen.Generate();
@@ -18,12 +17,12 @@ int main(int argc, char **argv) {
   lat.DumpExchange("exchange.out");
   lat.DumpPositions("positions.out");
 
-  for (int j = 0; j < 100; ++j) {
-    for (int i = 0; i < 10000; ++i) {
+  for (int j = 0; j < 2000; ++j) {
+    for (int i = 0; i < 10; ++i) {
       dyn->DoStep();
     }
-    real x, y, z;
-    std::tie(x, y, z) = dyn->lattice_->AvgM();
+    dyn->lattice_->PrintEnergy();
+    auto [x, y, z] = dyn->lattice_->AvgM();
     printf("%lf %lf %lf\n", x, y, z);
   }
   dyn->lattice_->DumpLattice("lattice.out");

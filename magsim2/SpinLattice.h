@@ -23,6 +23,8 @@ public:
 
   const std::vector<vec3d> & ComputeHeffs();
 
+  void PrintEnergy() const;
+
   std::vector<vec3d> spins_;
 
   real anisotropy_ = 0;

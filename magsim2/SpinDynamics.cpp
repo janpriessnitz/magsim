@@ -10,16 +10,22 @@ SpinDynamics::~SpinDynamics() {
 
 }
 
+int n_step = 0;
+
 void SpinDynamics::DoStep() {
+  ++n_step;
   // printf("tempfield: %lg\n", mag(TemperatureField()));
   auto Heffs = lattice_->ComputeHeffs();
 
-  #pragma omp parallel for simd
+  real temp_field_mag = sqrt(2*alpha_*constants::boltzmann*temperature_/(timestep_*constants::gyromagnetic_ratio*constants::mu_B));
+  auto norm_dist = std::normal_distribution<real>(0, 1);
+  std::mt19937 rng_eng(n_step);  // TODO: seed
+  #pragma omp parallel for private(norm_dist, rng_eng)
   for (size_t i = 0; i < lattice_->spins_.size(); ++i) {
     vec3d Heff = - (1/constants::mu_B)*Heffs[i];
     vec3d spin = lattice_->spins_[i];
     // TODO: try generating temperature field earlier in batch
-    Heff = Heff + TemperatureField();
+    Heff = Heff + temp_field_mag*vec3d{norm_dist(rng_eng), norm_dist(rng_eng), norm_dist(rng_eng)};
     // printf("%lg %lg\n", mag(Heff), mag(TemperatureField()));
 
     // TODO: better ODE solver

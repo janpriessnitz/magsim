@@ -1,6 +1,8 @@
 
 #include "MapReader.h"
 
+#include <stdexcept>
+
 MapReader::MapReader(const std::string &filename) : TupleReader(filename) {
   data_map = GetPairMap();
 }

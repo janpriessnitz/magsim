@@ -81,7 +81,7 @@ void SpinLattice::DumpHeffs(const std::string &fname) const {
   FILE *fp = fopen(fname.c_str(), "w");
   for (size_t i = 0; i < Heffs_.size(); ++i) {
     auto [x, y, z] = Heffs_[i];
-    fprintf(fp, "%lf %lf %lf %lf\n", x, y, z, mag(Heffs_[i]));
+    fprintf(fp, "%lf %lf %lf %lg\n", x, y, z, mag(Heffs_[i]));
   }
   fclose(fp);
 }
@@ -100,7 +100,7 @@ void SpinLattice::DumpExchange(const std::string &fname) const {
   for (size_t i = 0; i < exchange_.size(); ++i) {
     for (size_t j = 0; j < exchange_[i].size(); ++j) {
       auto [partner_ind, int_energy] = exchange_[i][j];
-      fprintf(fp, "%lu %lu %lf\n", i, partner_ind, int_energy);
+      fprintf(fp, "%lu %lu %lg\n", i, partner_ind, int_energy);
     }
   }
   fclose(fp);

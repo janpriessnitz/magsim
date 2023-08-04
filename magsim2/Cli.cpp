@@ -5,6 +5,7 @@
 
 #include <cstdio>
 #include <string>
+#include <chrono>
 
 int main(int argc, char **argv) {
   // ConfigReader c(argv[1]);
@@ -17,15 +18,19 @@ int main(int argc, char **argv) {
   lat.DumpExchange("exchange.out");
   lat.DumpPositions("positions.out");
 
-  for (int j = 0; j < 2000; ++j) {
-    for (int i = 0; i < 10; ++i) {
+  printf("starting sim\n");
+  auto start = std::chrono::high_resolution_clock::now();
+  for (int j = 0; j < 100; ++j) {
+    for (int i = 0; i < 1000; ++i) {
       dyn->DoStep();
     }
     dyn->lattice_->PrintEnergy();
-    auto [x, y, z] = dyn->lattice_->AvgM();
-    printf("%lf %lf %lf\n", x, y, z);
+    auto avgm = dyn->lattice_->AvgM();
+    printf("%s %lf\n", to_string(avgm).c_str(), mag(avgm));
   }
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  printf("took %lu ms\n", duration.count());
   dyn->lattice_->DumpLattice("lattice.out");
-  dyn->lattice_->DumpHeffs("heffs.out");
   return 0;
 }

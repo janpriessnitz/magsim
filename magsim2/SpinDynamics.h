@@ -17,7 +17,7 @@ public:
 
   SpinLattice* lattice_;
 
-  real temperature_ = 0;  // K
+  real temperature_ = 300;  // K
   real alpha_ = 0.1;  // damping
   real timestep_ = 1e-16;
 };

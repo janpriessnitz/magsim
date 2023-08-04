@@ -1,6 +1,8 @@
 
 #include "Util.h"
 
+#include <ctime>
+
 vec3d operator+(const vec3d& a, const vec3d& b) {
   return {std::get<0>(a) + std::get<0>(b), std::get<1>(a) + std::get<1>(b), std::get<2>(a) + std::get<2>(b)};
 }

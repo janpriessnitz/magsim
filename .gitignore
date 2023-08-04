@@ -14,3 +14,4 @@ cmake_install.cmake
 
 magsim/magsim
 magsim2/magsim2
+scratch/

@@ -6,13 +6,12 @@
 
 
 HcpCobaltGenerator::HcpCobaltGenerator() {
-
 }
 
 real Co_anis = -5.83e-24;  // J
-int nx = 10;
-int ny = 10;
-int nz = 10;
+int nx = 20;
+int ny = 20;
+int nz = 20;
 vec3d base1 = {1, 0, 0};
 vec3d base2 = {0.5, 0.8660254037844386, 0};
 vec3d base3 = {0, 0, 1.632993161855452};
@@ -21,18 +20,6 @@ mat3d base_mat = {base1, base2, base3};
 std::vector<vec3d> spin_pos_list = {
   {0, 0, 0},
   (1/3.0)*(base1 + base2) + (1/2.0)*base3
-};
-
-
-real Co_J1 = 1;
-
-std::vector<std::tuple<vec3d, real>> Js = {
-  {base1, Co_J1},
-  {-1*base1, Co_J1},
-  {base2, Co_J1},
-  {-1*base2, Co_J1},
-  {base1-base2, Co_J1},
-  {base2-base1, Co_J1},
 };
 
 SpinLattice HcpCobaltGenerator::Generate() const {
@@ -109,11 +96,11 @@ std::vector<vec3d> HcpCobaltGenerator::GenerateSpins(const std::vector<vec3d> & 
   for (size_t ind = 0; ind < positions.size(); ++ind) {
     vec3d pos = positions[ind];
     // if (std::get<0>(pos) < nx/2) {
-    //   spins[ind] = {0, 0, -1};  // TODO
+    //   spins[ind] = {0, 0, -1};
     // } else {
     //   spins[ind] = {0, 0, 1};
     // }
-    spins[ind] = {0, 0.7071067811865476, 0.7071067811865476};
+    spins[ind] = {0, 0, 1};
   }
   return spins;
 }

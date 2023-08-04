@@ -20,6 +20,9 @@ public:
   real temperature_ = 300;  // K
   real alpha_ = 0.1;  // damping
   real timestep_ = 1e-16;
+
+  std::vector<std::mt19937> rng_engs_;  // TODO: seed
+
 };
 
 #endif

@@ -22,8 +22,8 @@ SpinDynamics::~SpinDynamics() {
 
 // Heun
 void SpinDynamics::DoStep() {
-  // DoStep_Heun();
-  DoStep_Stupid();
+  DoStep_Heun();
+  // DoStep_Stupid();
 }
 
 void SpinDynamics::DoStep_Heun() {

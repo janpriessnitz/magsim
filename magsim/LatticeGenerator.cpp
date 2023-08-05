@@ -9,9 +9,9 @@ HcpCobaltGenerator::HcpCobaltGenerator() {
 }
 
 real Co_anis = -5.83e-24;  // J
-int nx = 400;
-int ny = 30;
-int nz = 30;
+int nx = 100;
+int ny = 100;
+int nz = 10;
 vec3d base1 = {1, 0, 0};
 vec3d base2 = {0.5, 0.8660254037844386, 0};
 vec3d base3 = {0, 0, 1.632993161855452};
@@ -71,6 +71,9 @@ std::vector<std::vector<std::tuple<size_t, real>>> HcpCobaltGenerator::GenerateE
   const std::vector<mat3d> & syms) const
 {
   std::vector<std::vector<std::tuple<size_t, real>>> exch_list;
+  exch_list.resize(point_lookup.points_.size());
+
+  #pragma omp parallel for
   for (size_t ind = 0; ind < point_lookup.points_.size(); ++ind) {
     // std::vector<std::tuple<size_t, real>> one_exch;
     std::map<size_t, real> one_exch_map;
@@ -87,7 +90,7 @@ std::vector<std::vector<std::tuple<size_t, real>>> HcpCobaltGenerator::GenerateE
     }
     std::vector<std::tuple<size_t, real>> one_exch;
     one_exch.insert(one_exch.end(), one_exch_map.begin(), one_exch_map.end());
-    exch_list.push_back(one_exch);
+    exch_list[ind] = one_exch;
   }
   return exch_list;
 }
@@ -104,6 +107,7 @@ std::vector<vec3d> HcpCobaltGenerator::GenerateSpins(const std::vector<vec3d> & 
     } else {
       spins[ind] = {0, 0, 1};
     }
+    // spins[ind] = {0, 0, 1};
   }
   return spins;
 }
@@ -113,13 +117,6 @@ std::optional<size_t> HcpCobaltGenerator::GetPoint(const PointLookup & lookup, c
   auto partner_ind = lookup.GetExact(pos);
   return partner_ind;
 }
-
-// P6/mmc (no. 194)
-std::vector<mat3d> hcp_syms = {
-  {{1, 2, 3},
-   {4, 5, 6},
-   {7, 8, 9}}
-};
 
 std::vector<mat3d> HcpCobaltGenerator::LoadSymmetries(const std::string & fname) const {
   TupleReader reader = TupleReader(fname);

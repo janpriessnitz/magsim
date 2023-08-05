@@ -57,7 +57,7 @@ void SpinDynamics::DoStep_Heun() {
 
     vec3d oldspin = lattice_->spins_[i];
 
-    vec3d newspin = oldspin + (timestep_/2)*(Heff + Heff_prime);
+    vec3d newspin = oldspin + (timestep_/2)*(GetSpinUpdate(oldspin, Heff) + GetSpinUpdate(spins_prime[i], Heff_prime));
     lattice_->spins_[i] = normalize(newspin);
   }
 }
@@ -72,11 +72,8 @@ void SpinDynamics::DoStep_Stupid() {
     Heff = Heff + temp_field[i];
 
     vec3d spin = lattice_->spins_[i];
-    vec3d derM = - constants::gyromagnetic_ratio/(1 + alpha_*alpha_)*(vec_prod(spin, Heff))
-               - constants::gyromagnetic_ratio*alpha_/(1 + alpha_*alpha_)*(vec_prod(spin, vec_prod(spin, Heff)));
 
-
-    spin = spin + timestep_*derM;
+    spin = spin + timestep_*GetSpinUpdate(spin, Heff);
     spin = (1/mag(spin))*spin;
     lattice_->spins_[i] = spin;
   }

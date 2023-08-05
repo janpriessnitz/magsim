@@ -13,4 +13,4 @@ cmake_install.cmake
 *.out
 
 magsim/magsim
-scratch/
+scratch

@@ -9,9 +9,9 @@ HcpCobaltGenerator::HcpCobaltGenerator() {
 }
 
 real Co_anis = -5.83e-24;  // J
-int nx = 100;
-int ny = 100;
-int nz = 10;
+int nx = 500;
+int ny = 30;
+int nz = 30;
 vec3d base1 = {1, 0, 0};
 vec3d base2 = {0.5, 0.8660254037844386, 0};
 vec3d base3 = {0, 0, 1.632993161855452};

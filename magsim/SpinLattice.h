@@ -17,11 +17,11 @@ public:
   static SpinLattice GenerateFefcc();
 
   void DumpLattice(const std::string &fname) const;
-  void DumpHeffs(const std::string &fname) const;
   void DumpPositions(const std::string &fname) const;
   void DumpExchange(const std::string &fname) const;
 
-  const std::vector<vec3d> & ComputeHeffs();
+  std::vector<vec3d> ComputeHeffs(const std::vector<vec3d> spins) const;
+  std::vector<vec3d> ComputeHeffs() const;
 
   void PrintEnergy() const;
 
@@ -32,10 +32,8 @@ public:
 
   vec3d AvgM() const;
 
-  void ComputeAnis();
-  void ComputeExch();
-
-  std::vector<vec3d> Heffs_;
+  void ComputeAnis(std::vector<vec3d> & Heffs, const std::vector<vec3d> spins) const;
+  void ComputeExch(std::vector<vec3d> & Heffs, const std::vector<vec3d> spins) const;
 
   std::vector<vec3d> positions_;
 };

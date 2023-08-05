@@ -27,7 +27,6 @@ SpinLattice SpinLattice::GenerateFefcc() {
   lat.anisotropy_ = 0.020;
   lat.exchange_.resize(2*N*N*N);
   lat.spins_.resize(2*N*N*N);
-  lat.Heffs_.resize(2*N*N*N);
 
 
   for (int x = 0; x < 10; ++x) {
@@ -78,15 +77,6 @@ void SpinLattice::DumpLattice(const std::string &fname) const {
   fclose(fp);
 }
 
-void SpinLattice::DumpHeffs(const std::string &fname) const {
-  FILE *fp = fopen(fname.c_str(), "w");
-  for (size_t i = 0; i < Heffs_.size(); ++i) {
-    auto [x, y, z] = Heffs_[i];
-    fprintf(fp, "%lf %lf %lf %lg\n", x, y, z, mag(Heffs_[i]));
-  }
-  fclose(fp);
-}
-
 void SpinLattice::DumpPositions(const std::string &fname) const {
   FILE *fp = fopen(fname.c_str(), "w");
   for (size_t i = 0; i < positions_.size(); ++i) {
@@ -107,26 +97,32 @@ void SpinLattice::DumpExchange(const std::string &fname) const {
   fclose(fp);
 }
 
+std::vector<vec3d> SpinLattice::ComputeHeffs(const std::vector<vec3d> spins) const {
+  std::vector<vec3d> Heffs;
+  Heffs.resize(spins.size());
 
-const std::vector<vec3d> & SpinLattice::ComputeHeffs() {
-  this->ComputeAnis();
-  this->ComputeExch();
+  this->ComputeAnis(Heffs, spins);
+  this->ComputeExch(Heffs, spins);
 
-  return this->Heffs_;
+  return Heffs;
+}
+
+std::vector<vec3d> SpinLattice::ComputeHeffs() const {
+  return ComputeHeffs(spins_);
 }
 
 // TODO: anisotropy in general direction
-// Ham: E = K*(SxA)^2
-// Heff = 2*K*(SxA)xA
-void SpinLattice::ComputeAnis() {
+// Ham: E = K*(S.A)^2
+// Heff = 2*K*(S.A).A
+void SpinLattice::ComputeAnis(std::vector<vec3d> & Heffs, const std::vector<vec3d> spins) const {
   #pragma omp parallel for simd
   for (size_t i = 0; i < spins_.size(); ++i) {
     real zmag = std::get<2>(spins_[i]);
-    Heffs_[i] = {0, 0, 2*anisotropy_*zmag};
+    Heffs[i] = {0, 0, 2*anisotropy_*zmag};
   }
 }
 
-void SpinLattice::ComputeExch() {
+void SpinLattice::ComputeExch(std::vector<vec3d> & Heffs, const std::vector<vec3d> spins) const {
   #pragma omp parallel for simd
   for (size_t i = 0; i < spins_.size(); ++i) {
     vec3d J_field = {0, 0, 0};
@@ -134,7 +130,7 @@ void SpinLattice::ComputeExch() {
       auto [spin_ind, J] = exchange_[i][j];
       J_field = J_field - J*spins_[spin_ind];
     }
-    Heffs_[i] = Heffs_[i] + J_field;
+    Heffs[i] = Heffs[i] + J_field;
   }
 }
 

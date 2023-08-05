@@ -36,6 +36,10 @@ vec3d operator*(const vec3d& v, const mat3d& A) {
   return {scal_prod(v, A1), scal_prod(v, A2), scal_prod(v, A3)};
 }
 
+extern vec3d normalize(const vec3d &vec) {
+  return (1/mag(vec))*vec;
+}
+
 extern mat3d transpose(const mat3d& A) {
   auto [A1, A2, A3] = A;
   auto [A11, A12, A13] = A1;

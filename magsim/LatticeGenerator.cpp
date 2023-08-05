@@ -9,7 +9,7 @@ HcpCobaltGenerator::HcpCobaltGenerator() {
 }
 
 real Co_anis = -5.83e-24;  // J
-int nx = 500;
+int nx = 400;
 int ny = 30;
 int nz = 30;
 vec3d base1 = {1, 0, 0};
@@ -42,7 +42,6 @@ SpinLattice HcpCobaltGenerator::Generate() const {
 
   printf("generating spins\n");
   res.spins_ = GenerateSpins(positions);
-  res.Heffs_.resize(res.positions_.size());
   return res;
 }
 

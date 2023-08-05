@@ -21,6 +21,8 @@ extern vec3d vec_prod(const vec3d& a, const vec3d& b);
 
 extern real mag(const vec3d &vel);
 
+extern vec3d normalize(const vec3d &vec);
+
 extern std::string to_string(const vec3d& v);
 
 typedef std::tuple<vec3d, vec3d, vec3d> mat3d;

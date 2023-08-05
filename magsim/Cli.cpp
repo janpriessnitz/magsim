@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
   SpinDynamics* dyn = new SpinDynamics(&lat);
   dyn->alpha_ = 0.1;
   dyn->temperature_ = 1;
-  dyn->timestep_ = 1e-16;
+  dyn->timestep_ = 1e-13;
 
   printf("dumping exchange\n");
   lat.DumpExchange("exchange.out");

@@ -16,7 +16,7 @@ public:
   void DoStep_Stupid();
 
 
-  std::vector<vec3d> GetTemperatureField();
+  void GetTemperatureField();
 
   inline vec3d GetSpinUpdate(vec3d spin, vec3d Heff) const;
 
@@ -28,6 +28,10 @@ public:
 
   std::vector<std::mt19937> rng_engs_;  // TODO: seed
 
+  std::vector<vec3d> Heffs_;
+  std::vector<vec3d> Heffs_prime_;
+  std::vector<vec3d> spins_prime_;
+  std::vector<vec3d> temp_field_;
 };
 
 #endif

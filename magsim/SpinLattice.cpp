@@ -97,18 +97,15 @@ void SpinLattice::DumpExchange(const std::string &fname) const {
   fclose(fp);
 }
 
-std::vector<vec3d> SpinLattice::ComputeHeffs(const std::vector<vec3d> spins) const {
-  std::vector<vec3d> Heffs;
+void SpinLattice::ComputeHeffs(const std::vector<vec3d> spins, std::vector<vec3d> & Heffs) const {
   Heffs.resize(spins.size());
 
   this->ComputeAnis(Heffs, spins);
   this->ComputeExch(Heffs, spins);
-
-  return Heffs;
 }
 
-std::vector<vec3d> SpinLattice::ComputeHeffs() const {
-  return ComputeHeffs(spins_);
+void SpinLattice::ComputeHeffs(std::vector<vec3d> & Heffs) const {
+  return ComputeHeffs(spins_, Heffs);
 }
 
 // TODO: anisotropy in general direction

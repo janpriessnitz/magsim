@@ -20,8 +20,8 @@ public:
   void DumpPositions(const std::string &fname) const;
   void DumpExchange(const std::string &fname) const;
 
-  std::vector<vec3d> ComputeHeffs(const std::vector<vec3d> spins) const;
-  std::vector<vec3d> ComputeHeffs() const;
+  void ComputeHeffs(const std::vector<vec3d> spins, std::vector<vec3d> & Heffs) const;
+  void ComputeHeffs(std::vector<vec3d> & Heffs) const;
 
   void PrintEnergy() const;
 

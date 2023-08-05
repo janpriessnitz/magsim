@@ -8,23 +8,28 @@
 #include <chrono>
 
 int main(int argc, char **argv) {
-  HcpCobaltGenerator gen;
+  MapReader reader(argv[1]);
+  HcpCobaltGenerator gen(reader);
   printf("generating spin lattice\n");
   SpinLattice lat = gen.Generate();
   printf("spin lattice generated\n");
 
   SpinDynamics* dyn = new SpinDynamics(&lat);
-  dyn->alpha_ = 0.1;
-  dyn->temperature_ = 1;
-  dyn->timestep_ = 5e-16;
+  dyn->alpha_ = reader.GetFloat("damping");
+  dyn->temperature_ = reader.GetFloat("temperature");
+  dyn->timestep_ = reader.GetFloat("timestep");
 
   printf("dumping positions\n");
   lat.DumpPositions("positions.out");
 
   printf("starting sim\n");
+
+  int64_t num_step = reader.GetInt("num_step");
+  int64_t num_substep = reader.GetInt("num_substep");
+
   auto start = std::chrono::high_resolution_clock::now();
-  for (int j = 0; j < 50; ++j) {
-    for (int i = 0; i < 2000; ++i) {
+  for (int j = 0; j < num_step; ++j) {
+    for (int i = 0; i < num_substep; ++i) {
       dyn->DoStep();
     }
     dyn->lattice_->PrintEnergy();

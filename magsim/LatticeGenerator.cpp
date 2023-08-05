@@ -5,22 +5,14 @@
 #include <cmath>
 
 
-HcpCobaltGenerator::HcpCobaltGenerator() {
+HcpCobaltGenerator::HcpCobaltGenerator(const MapReader & config) {
+  nx_ = config.GetInt("nx");
+  ny_ = config.GetInt("ny");
+  nz_ = config.GetInt("nz");
+  Co_anis_ = config.GetFloat("anisotropy");
+  symmetry_fname_ = config.GetString("symmetry_file");
+  exchange_fname_ = config.GetString("exchange_file");
 }
-
-real Co_anis = -5.83e-24;  // J
-int nx = 500;
-int ny = 30;
-int nz = 30;
-vec3d base1 = {1, 0, 0};
-vec3d base2 = {0.5, 0.8660254037844386, 0};
-vec3d base3 = {0, 0, 1.632993161855452};
-mat3d base_mat = {base1, base2, base3};
-
-std::vector<vec3d> spin_pos_list = {
-  {0, 0, 0},
-  (1/3.0)*(base1 + base2) + (1/2.0)*base3
-};
 
 SpinLattice HcpCobaltGenerator::Generate() const {
   printf("generating positions\n");
@@ -30,12 +22,12 @@ SpinLattice HcpCobaltGenerator::Generate() const {
 
   SpinLattice res;
   res.positions_ = positions;
-  res.anisotropy_ = Co_anis;
+  res.anisotropy_ = Co_anis_;
 
   printf("loading symmetries\n");
-  auto syms = LoadSymmetries("sym.mat");
+  auto syms = LoadSymmetries(symmetry_fname_);
   printf("loading exchange\n");
-  auto exchange_ints = LoadExchange("exchange.in");
+  auto exchange_ints = LoadExchange(exchange_fname_);
 
   printf("generating exchange\n");
   res.exchange_ = GenerateExchange(point_lookup, exchange_ints, syms);
@@ -50,10 +42,10 @@ SpinLattice HcpCobaltGenerator::Generate() const {
 std::vector<vec3d> HcpCobaltGenerator::GeneratePositions() const {
   std::vector<vec3d> positions;
 
-  for (int curz = 0; curz < nz; ++curz) {
-    for (int cury = 0; cury < ny; ++cury) {
-      for (int curx = 0; curx < nx; ++curx) {
-        vec3d unit_cell_pos = curx*base1 + cury*base2 + curz*base3;
+  for (int curz = 0; curz < nz_; ++curz) {
+    for (int cury = 0; cury < ny_; ++cury) {
+      for (int curx = 0; curx < nx_; ++curx) {
+        vec3d unit_cell_pos = curx*base1_ + cury*base2_ + curz*base3_;
         for (const vec3d & spin_pos : spin_pos_list) {
           vec3d pos = unit_cell_pos + spin_pos;
           positions.emplace_back(pos);
@@ -102,7 +94,7 @@ std::vector<vec3d> HcpCobaltGenerator::GenerateSpins(const std::vector<vec3d> & 
   spins.resize(positions.size());
   for (size_t ind = 0; ind < positions.size(); ++ind) {
     vec3d pos = positions[ind];
-    if (std::get<0>(pos) < nx/2) {
+    if (std::get<0>(pos) < nx_/2) {
       spins[ind] = {0, 0, -1};
     } else {
       spins[ind] = {0, 0, 1};
@@ -139,7 +131,7 @@ std::vector<std::tuple<vec3d, real>> HcpCobaltGenerator::LoadExchange(const std:
   for (int i = 0; i < reader.NumRows(); ++i) {
     vec3d vec = {reader.GetDouble(i, 0), reader.GetDouble(i, 1), reader.GetDouble(i, 2)};
     // maptype = 2 in UppASD
-    vec = vec*base_mat;
+    vec = vec*base_mat_;
     real energy = reader.GetDouble(i, 3)*constants::Ry*1e-3;
     energy *= 2;  // consistent with UppASD, TODO: Remove
     res.push_back({vec, energy});

@@ -7,6 +7,7 @@
 
 #include "SpinLattice.h"
 #include "Util.h"
+#include "MapReader.h"
 
 
 class PointLookup {
@@ -38,7 +39,7 @@ public:
 
 class HcpCobaltGenerator {
 public:
-  HcpCobaltGenerator();
+  HcpCobaltGenerator(const MapReader & config);
 
   SpinLattice Generate() const;
 
@@ -56,8 +57,20 @@ public:
 
   std::vector<vec3d> ApplySymmetry(const vec3d & vec, const std::vector<mat3d> & syms) const;
 
+  int nx_, ny_, nz_;
+  vec3d base1_ = {1, 0, 0};
+  vec3d base2_ = {0.5, 0.8660254037844386, 0};
+  vec3d base3_ = {0, 0, 1.632993161855452};
+  mat3d base_mat_ = {base1_, base2_, base3_};
+  std::vector<vec3d> spin_pos_list = {
+    {0, 0, 0},
+    (1/3.0)*(base1_ + base2_) + (1/2.0)*base3_
+  };
 
-
+  real Co_anis_;  // J
+  std::string exchange_fname_;
+  std::string symmetry_fname_;
 };
+
 
 #endif // LATTICEGENERATOR_H

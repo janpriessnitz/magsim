@@ -1,0 +1,6 @@
+nx 10
+ny 10
+nz 10
+anisotropy -5.83e-24
+symmetry_file sym.mat
+exchange_file exchange.in

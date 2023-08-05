@@ -1,0 +1,21 @@
+v priloze jsou data pro obrazek 1 v tom paperu.
+
+V souboru hh_aa (hh_ab) jsou hodnoty
+
+pro krizky (ctverecky) v tom obrazku.
+
+Jsou potreba jen ty dva posledni sloupecky:
+
+dist - vzdalenost v jednotkach mrizkoveho parametru a,
+
+  hhj - vymenna interakce v Ry.
+
+ 
+
+Pro ten levy panel se proste pouziji ta data, jak jsou
+
+(vymenne interakce nuto prevest na mRy), pro ten pravy
+
+panel je nutno vynasobit ty vymenne interakce treti
+
+mocninou te vzdalenosti -

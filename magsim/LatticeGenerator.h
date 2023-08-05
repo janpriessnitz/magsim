@@ -67,9 +67,15 @@ public:
     (1/3.0)*(base1_ + base2_) + (1/2.0)*base3_
   };
 
+  mat3d base_mat_inv_ = inverse(base_mat_);
+
   real Co_anis_;  // J
   std::string exchange_fname_;
   std::string symmetry_fname_;
+
+  bool periodic_x_;
+  bool periodic_y_;
+  bool periodic_z_;
 };
 
 

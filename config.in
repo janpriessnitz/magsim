@@ -4,3 +4,11 @@ nz 10
 anisotropy -5.83e-24
 symmetry_file sym.mat
 exchange_file exchange.in
+num_step 1
+num_substep 1000
+timestep 5e-16
+damping 0.1
+temperature 1
+periodic_x 1
+periodic_y 1
+periodic_z 1

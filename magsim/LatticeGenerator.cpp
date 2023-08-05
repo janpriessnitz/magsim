@@ -12,6 +12,10 @@ HcpCobaltGenerator::HcpCobaltGenerator(const MapReader & config) {
   Co_anis_ = config.GetFloat("anisotropy");
   symmetry_fname_ = config.GetString("symmetry_file");
   exchange_fname_ = config.GetString("exchange_file");
+
+  periodic_x_ = config.GetInt("periodic_x") != 0;
+  periodic_y_ = config.GetInt("periodic_y") != 0;
+  periodic_z_ = config.GetInt("periodic_z") != 0;
 }
 
 SpinLattice HcpCobaltGenerator::Generate() const {
@@ -106,7 +110,20 @@ std::vector<vec3d> HcpCobaltGenerator::GenerateSpins(const std::vector<vec3d> & 
 
 // TODO: periodic boundary conditions
 std::optional<size_t> HcpCobaltGenerator::GetPoint(const PointLookup & lookup, const vec3d & pos) const {
-  auto partner_ind = lookup.GetExact(pos);
+  vec3d base_pos = pos*base_mat_inv_;
+  auto [bx, by, bz] = base_pos;
+  if (periodic_x_) {
+    bx = fmod(bx+nx_, nx_);
+  }
+  if (periodic_y_) {
+    by = fmod(by+ny_, ny_);
+  }
+  if (periodic_z_) {
+    bz = fmod(bz+nz_, nz_);
+  }
+
+  vec3d new_pos = vec3d{bx, by, bz}*base_mat_;
+  auto partner_ind = lookup.GetExact(new_pos);
   return partner_ind;
 }
 

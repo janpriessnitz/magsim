@@ -31,6 +31,8 @@ extern vec3d operator*(const vec3d& v, const mat3d& A);
 
 extern mat3d transpose(const mat3d& A);
 
+extern mat3d inverse(const mat3d& A);
+
 extern real rnd_uni(real min, real max);
 extern real rnd_norm(real mean, real stddev);
 

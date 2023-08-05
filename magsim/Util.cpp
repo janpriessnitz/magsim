@@ -48,6 +48,18 @@ extern mat3d transpose(const mat3d& A) {
   return {{A11, A21, A31}, {A12, A22, A32}, {A13, A23, A33}};
 }
 
+extern mat3d inverse(const mat3d& A) {
+  auto [A1, A2, A3] = A;
+  auto [a, b, c] = A1;
+  auto [d, e, f] = A2;
+  auto [g, h, i] = A3;
+  real det = a*(e*i - f*h) - b*(d*i -f*g) + c*(d*h - e*g);
+  return {(1/det)*vec3d{e*i - f*h, c*h - b*i, b*f - c*e},
+          (1/det)*vec3d{f*g - d*i, a*i - c*g, c*d - a*f},
+          (1/det)*vec3d{d*h - e*g, b*g - a*h, a*e - b*d}};
+}
+
+
 extern std::string to_string(const vec3d& v) {
   char buf[200];
   auto [x, y, z] = v;

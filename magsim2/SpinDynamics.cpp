@@ -31,9 +31,7 @@ void SpinDynamics::DoStep() {
   for (size_t i = 0; i < lattice_->spins_.size(); ++i) {
     vec3d Heff = - (1/constants::mu_B)*Heffs[i];
     vec3d temp_field = temp_field_mag*vec3d{norm_dist(rng_engs_[omp_get_thread_num()]), norm_dist(rng_engs_[omp_get_thread_num()]), norm_dist(rng_engs_[omp_get_thread_num()])};
-    // printf("%s %s\n", to_string(Heff).c_str(), to_string(temp_field).c_str());
     Heff = Heff + temp_field;
-    // printf("%lg %lg\n", mag(Heff), mag(TemperatureField()));
 
     // TODO: better ODE solver
     vec3d spin = lattice_->spins_[i];
@@ -45,10 +43,4 @@ void SpinDynamics::DoStep() {
     spin = (1/mag(spin))*spin;
     lattice_->spins_[i] = spin;
   }
-}
-
-vec3d SpinDynamics::TemperatureField() {
-  // TODO: add magnetic moment magnitude
-  real K = 2*alpha_*constants::boltzmann*temperature_/(timestep_*constants::gyromagnetic_ratio*constants::mu_B);
-  return sqrt(K)*rnd_gauss_vec();
 }

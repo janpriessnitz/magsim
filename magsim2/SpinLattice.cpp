@@ -1,4 +1,5 @@
 #include "SpinLattice.h"
+#include "Constants.h"
 
 #include <cstdio>
 
@@ -72,7 +73,7 @@ void SpinLattice::DumpLattice(const std::string &fname) const {
   FILE *fp = fopen(fname.c_str(), "w");
   for (size_t i = 0; i < spins_.size(); ++i) {
     auto [x, y, z] = spins_[i];
-    fprintf(fp, "%lf %lf %lf %lf\n", x, y, z, mag(spins_[i]));
+    fprintf(fp, "%lf %lf %lf\n", x, y, z);
   }
   fclose(fp);
 }
@@ -153,8 +154,8 @@ void SpinLattice::PrintEnergy() const {
       exch_en -= J*scal_prod(spins_[i], spins_[spin_ind]);
     }
   }
-  exch_en /= spins_.size();
-  printf("anis: %lg, exch: %lg\n", anis_en, exch_en);
+  exch_en /= spins_.size()*2;  // double counting
+  printf("anis: %lg mRy, exch: %lg mRy\n", anis_en/constants::Ry*1000, exch_en/constants::Ry*1000);
 }
 
 vec3d SpinLattice::AvgM() const {

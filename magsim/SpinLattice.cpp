@@ -1,98 +1,168 @@
 #include "SpinLattice.h"
+#include "Constants.h"
 
 #include <cstdio>
 
 
-SpinLattice::SpinLattice(const Config &conf)
-  : w_(conf.lattice_w)
-  , h_(conf.lattice_h)
-  , J_(conf.J)
-  , D_(conf.D)
-  , B_(conf.B)
-{
-  dump_file_ = fopen(conf.lattice_dump_file.c_str(), "w");
-  lattice_.resize(w_*h_);
-  init_random();
+SpinLattice::SpinLattice() {
 }
 
 SpinLattice::~SpinLattice() {
-  fclose(dump_file_);
 }
 
-vec3d SpinLattice::get(int64_t x, int64_t y) {
-  return lattice_[index(x, y)];
+size_t N = 2;
+static size_t index(int x, int y, int z, int t) {
+  x = (x + N)%N;
+  y = (y + N)%N;
+  z = (z + N)%N;
+  return 2*(N*(N*x + y) + z) + t;
 }
 
-void SpinLattice::set(int64_t x, int64_t y, vec3d spin) {
-  lattice_[index(x, y)] = spin;
-}
+real J1 = 1;
 
-uint64_t SpinLattice::index(int64_t x, int64_t y) {
-  // periodic coordinates
-  x = (x + w_) % w_;
-  y = (y + h_) % h_;
-  return x + y*w_;
-}
+SpinLattice SpinLattice::GenerateFefcc() {
 
-real SpinLattice::getEnergy() {
-  real E = 0;
-  for (int64_t x = 0; x < w_; ++x) {
-    for (int64_t y = 0; y < h_; ++y) {
-      E += -J_*scal_prod(get(x, y), get(x+1, y));
-      E += -J_*scal_prod(get(x, y), get(x, y+1));
-      E += -scal_prod({0, D_, 0}, vec_prod(get(x, y), get(x+1, y)));
-      E += -scal_prod({-D_, 0, 0}, vec_prod(get(x, y), get(x, y+1)));
-      E += -scal_prod(B_, get(x, y));
+
+  SpinLattice lat;
+  lat.anisotropy_ = 0.020;
+  lat.exchange_.resize(2*N*N*N);
+  lat.spins_.resize(2*N*N*N);
+  lat.Heffs_.resize(2*N*N*N);
+
+
+  for (int x = 0; x < 10; ++x) {
+    for (int y = 0; y < 10; ++y) {
+      for(int z = 0; z < 10; ++z) {
+        // type 0
+        size_t ind0 = index(x, y, z, 0);
+        lat.exchange_[ind0].push_back({index(x, y, z+1, 1), J1});
+        lat.exchange_[ind0].push_back({index(x, y, z, 1), J1});
+        lat.exchange_[ind0].push_back({index(x, y+1, z+1, 1), J1});
+        lat.exchange_[ind0].push_back({index(x, y+1, z, 1), J1});
+        lat.exchange_[ind0].push_back({index(x+1, y, z+1, 1), J1});
+        lat.exchange_[ind0].push_back({index(x+1, y, z, 1), J1});
+        lat.exchange_[ind0].push_back({index(x+1, y+1, z+1, 1), J1});
+        lat.exchange_[ind0].push_back({index(x+1, y+1, z, 1), J1});
+
+        // type 1
+        size_t ind1 = index(x, y, z, 1);
+        lat.exchange_[ind1].push_back({index(x, y, z-1, 0), J1});
+        lat.exchange_[ind1].push_back({index(x, y, z, 0), J1});
+        lat.exchange_[ind1].push_back({index(x, y-1, z-1, 0), J1});
+        lat.exchange_[ind1].push_back({index(x, y-1, z, 0), J1});
+        lat.exchange_[ind1].push_back({index(x-1, y, z-1, 0), J1});
+        lat.exchange_[ind1].push_back({index(x-1, y, z, 0), J1});
+        lat.exchange_[ind1].push_back({index(x-1, y-1, z-1, 0), J1});
+        lat.exchange_[ind1].push_back({index(x-1, y-1, z, 0), J1});
+
+        // initial config
+        lat.spins_[ind0] = {1, 0, 1};
+        lat.spins_[ind1] = {1, 0, 1};
+
+        lat.spins_[ind0] = (1/mag(lat.spins_[ind0]))*lat.spins_[ind0];
+        lat.spins_[ind1] = (1/mag(lat.spins_[ind1]))*lat.spins_[ind1];
+      }
     }
   }
-  return E;
+
+  return lat;
 }
 
-real SpinLattice::getEnergyDelta(int64_t x, int64_t y, vec3d newspin) {
-  real deltaE = 0;
-  deltaE += -J_*scal_prod(newspin, get(x+1, y));
-  deltaE += -J_*scal_prod(newspin, get(x, y+1));
-  deltaE += -J_*scal_prod(newspin, get(x-1, y));
-  deltaE += -J_*scal_prod(newspin, get(x, y-1));
-  deltaE += -scal_prod({0, D_, 0}, vec_prod(newspin, get(x+1, y)));
-  deltaE += -scal_prod({0, -D_, 0}, vec_prod(newspin, get(x-1, y)));
-  deltaE += -scal_prod({-D_, 0, 0}, vec_prod(newspin, get(x, y+1)));
-  deltaE += -scal_prod({D_, 0, 0}, vec_prod(newspin, get(x, y-1)));
-  deltaE += -scal_prod(B_, newspin);
 
-  deltaE -= -J_*scal_prod(get(x, y), get(x+1, y));
-  deltaE -= -J_*scal_prod(get(x, y), get(x, y+1));
-  deltaE -= -J_*scal_prod(get(x, y), get(x-1, y));
-  deltaE -= -J_*scal_prod(get(x, y), get(x, y-1));
-  deltaE -= -scal_prod({0, D_, 0}, vec_prod(get(x, y), get(x+1, y)));
-  deltaE -= -scal_prod({0, -D_, 0}, vec_prod(get(x, y), get(x-1, y)));
-  deltaE -= -scal_prod({-D_, 0, 0}, vec_prod(get(x, y), get(x, y+1)));
-  deltaE -= -scal_prod({D_, 0, 0}, vec_prod(get(x, y), get(x, y-1)));
-  deltaE -= -scal_prod(B_, get(x, y));
-
-  vec3d F = getLocalField(x, y);
-  real deltaE2 = scal_prod(F, newspin) - scal_prod(F, get(x, y));
-  return deltaE;
+void SpinLattice::DumpLattice(const std::string &fname) const {
+  FILE *fp = fopen(fname.c_str(), "w");
+  for (size_t i = 0; i < spins_.size(); ++i) {
+    auto [x, y, z] = spins_[i];
+    fprintf(fp, "%lf %lf %lf\n", x, y, z);
+  }
+  fclose(fp);
 }
 
-vec3d SpinLattice::getLocalField(int64_t x, int64_t y) {
-  vec3d F = {0,0,0};
-  F = F - J_*(get(x+1, y) + get(x-1, y) + get(x, y+1) + get(x, y-1));
-  F = F - D_*(vec_prod(get(x+1, y), {0, 1, 0}) + vec_prod(get(x-1, y), {0, -1, 0}) + vec_prod(get(x, y+1), {-1, 0, 0}) + vec_prod(get(x, y-1), {1, 0, 0}));
-  F = F - B_;
-  return F;
+void SpinLattice::DumpHeffs(const std::string &fname) const {
+  FILE *fp = fopen(fname.c_str(), "w");
+  for (size_t i = 0; i < Heffs_.size(); ++i) {
+    auto [x, y, z] = Heffs_[i];
+    fprintf(fp, "%lf %lf %lf %lg\n", x, y, z, mag(Heffs_[i]));
+  }
+  fclose(fp);
 }
 
-void SpinLattice::dump(real T, uint64_t steps_total) {
-  fprintf(dump_file_, "%ld %ld %le %le %lu\n", w_, h_, getEnergy(), T, steps_total);
-  for (uint64_t i; i < w_*h_; ++i) {
-    fprintf(dump_file_, "%lf %lf %lf\n", std::get<0>(lattice_[i]), std::get<1>(lattice_[i]), std::get<2>(lattice_[i]));
+void SpinLattice::DumpPositions(const std::string &fname) const {
+  FILE *fp = fopen(fname.c_str(), "w");
+  for (size_t i = 0; i < positions_.size(); ++i) {
+    auto [x, y, z] = positions_[i];
+    fprintf(fp, "%lf %lf %lf\n", x, y, z);
+  }
+  fclose(fp);
+}
+
+void SpinLattice::DumpExchange(const std::string &fname) const {
+  FILE *fp = fopen(fname.c_str(), "w");
+  for (size_t i = 0; i < exchange_.size(); ++i) {
+    for (size_t j = 0; j < exchange_[i].size(); ++j) {
+      auto [partner_ind, int_energy] = exchange_[i][j];
+      fprintf(fp, "%lu %lu %lg\n", i, partner_ind, int_energy);
+    }
+  }
+  fclose(fp);
+}
+
+
+const std::vector<vec3d> & SpinLattice::ComputeHeffs() {
+  this->ComputeAnis();
+  this->ComputeExch();
+
+  return this->Heffs_;
+}
+
+// TODO: anisotropy in general direction
+// Ham: E = K*(SxA)^2
+// Heff = 2*K*(SxA)xA
+void SpinLattice::ComputeAnis() {
+  #pragma omp parallel for simd
+  for (size_t i = 0; i < spins_.size(); ++i) {
+    real zmag = std::get<2>(spins_[i]);
+    Heffs_[i] = {0, 0, 2*anisotropy_*zmag};
   }
 }
 
-
-void SpinLattice::init_random() {
-  for (uint64_t i = 0; i < w_*h_; ++i) {
-    lattice_[i] = rnd_vec();
+void SpinLattice::ComputeExch() {
+  #pragma omp parallel for simd
+  for (size_t i = 0; i < spins_.size(); ++i) {
+    vec3d J_field = {0, 0, 0};
+    for (size_t j = 0; j < exchange_[i].size(); ++j) {
+      auto [spin_ind, J] = exchange_[i][j];
+      J_field = J_field - J*spins_[spin_ind];
+    }
+    Heffs_[i] = Heffs_[i] + J_field;
   }
+}
+
+void SpinLattice::PrintEnergy() const {
+  real anis_en = 0;
+  for (size_t i = 0; i < spins_.size(); ++i) {
+    real zmag = std::get<2>(spins_[i]);
+    anis_en += anisotropy_*zmag*zmag;
+  }
+  anis_en /= spins_.size();
+
+  real exch_en = 0;
+  for (size_t i = 0; i < spins_.size(); ++i) {
+    vec3d J_field = {0, 0, 0};
+    for (size_t j = 0; j < exchange_[i].size(); ++j) {
+      auto [spin_ind, J] = exchange_[i][j];
+      exch_en -= J*scal_prod(spins_[i], spins_[spin_ind]);
+    }
+  }
+  exch_en /= spins_.size()*2;  // double counting
+  printf("anis: %lg mRy, exch: %lg mRy\n", anis_en/constants::Ry*1000, exch_en/constants::Ry*1000);
+}
+
+vec3d SpinLattice::AvgM() const {
+  vec3d res = {};
+  for (size_t i = 0; i < spins_.size(); ++i) {
+    res = res + spins_[i];
+  }
+  res = (1.0/spins_.size())*res;
+  return res;
 }

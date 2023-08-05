@@ -8,33 +8,36 @@
 #include "Config.h"
 #include "Util.h"
 
-// - periodic
-// - Heisenberg
-// - 2D squared
+
 class SpinLattice {
 public:
-  SpinLattice(const Config &conf);
+  SpinLattice();
   ~SpinLattice();
 
-  vec3d get(int64_t x, int64_t y);
-  void set(int64_t x, int64_t y, vec3d spin);
-  uint64_t index(int64_t x, int64_t y);
+  static SpinLattice GenerateFefcc();
 
-  real getEnergy();
-  real getEnergyDelta(int64_t x, int64_t y, vec3d newspin);
-  vec3d getLocalField(int64_t x, int64_t y);
+  void DumpLattice(const std::string &fname) const;
+  void DumpHeffs(const std::string &fname) const;
+  void DumpPositions(const std::string &fname) const;
+  void DumpExchange(const std::string &fname) const;
 
-  void dump(real T, uint64_t steps_total);
+  const std::vector<vec3d> & ComputeHeffs();
 
-  void init_random();
+  void PrintEnergy() const;
 
-  uint64_t w_;
-  uint64_t h_;
-  real J_;
-  real D_;
-  vec3d B_;
-  std::vector<vec3d> lattice_;
-  FILE *dump_file_;
+  std::vector<vec3d> spins_;
+
+  real anisotropy_ = 0;
+  std::vector<std::vector<std::tuple<size_t, real>>> exchange_;
+
+  vec3d AvgM() const;
+
+  void ComputeAnis();
+  void ComputeExch();
+
+  std::vector<vec3d> Heffs_;
+
+  std::vector<vec3d> positions_;
 };
 
 #endif // SIMULATION_H

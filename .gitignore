@@ -13,5 +13,4 @@ cmake_install.cmake
 *.out
 
 magsim/magsim
-magsim2/magsim2
 scratch/

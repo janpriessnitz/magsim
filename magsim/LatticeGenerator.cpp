@@ -110,7 +110,8 @@ std::vector<vec3d> HcpCobaltGenerator::GenerateSpins(const std::vector<vec3d> & 
 
 // TODO: periodic boundary conditions
 std::optional<size_t> HcpCobaltGenerator::GetPoint(const PointLookup & lookup, const vec3d & pos) const {
-  vec3d base_pos = pos*base_mat_inv_;
+  vec3d base_pos = pos + vec3d{tol/2, tol/2, tol/2};
+  base_pos = base_pos*base_mat_inv_;
   auto [bx, by, bz] = base_pos;
   if (periodic_x_) {
     bx = fmod(bx+nx_, nx_);
@@ -148,8 +149,8 @@ std::vector<std::tuple<vec3d, real>> HcpCobaltGenerator::LoadExchange(const std:
   for (int i = 0; i < reader.NumRows(); ++i) {
     vec3d vec = {reader.GetDouble(i, 0), reader.GetDouble(i, 1), reader.GetDouble(i, 2)};
     // maptype = 2 in UppASD
-    vec = vec*base_mat_;
-    real energy = reader.GetDouble(i, 3)*constants::Ry*1e-3;
+    // vec = vec*base_mat_;
+    real energy = reader.GetDouble(i, 3)*constants::Ry;
     energy *= 2;  // consistent with UppASD, TODO: Remove
     res.push_back({vec, energy});
   }

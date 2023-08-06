@@ -9,10 +9,10 @@
 #include "Util.h"
 #include "MapReader.h"
 
+static constexpr real tol = 0.1;
 
 class PointLookup {
 public:
-  static constexpr real tol = 0.0001;
 
   PointLookup(std::vector<vec3d> point_list);
 

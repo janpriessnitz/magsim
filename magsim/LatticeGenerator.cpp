@@ -16,6 +16,8 @@ HcpCobaltGenerator::HcpCobaltGenerator(const MapReader & config) {
   periodic_x_ = config.GetInt("periodic_x") != 0;
   periodic_y_ = config.GetInt("periodic_y") != 0;
   periodic_z_ = config.GetInt("periodic_z") != 0;
+
+  domain_wall_direction_ = config.GetChar("domain_wall_direction");
 }
 
 SpinLattice HcpCobaltGenerator::Generate() const {
@@ -92,17 +94,32 @@ std::vector<std::vector<std::tuple<size_t, real>>> HcpCobaltGenerator::GenerateE
 }
 
 // Half of spins are {0, 0, -1}, half {0, 0, 1}
-// Aim is to create a domain wall perpendicular to x-direction
+// Aim is to create a domain wall perpendicular to x- or z- direction
 std::vector<vec3d> HcpCobaltGenerator::GenerateSpins(const std::vector<vec3d> & positions) const {
   std::vector<vec3d> spins;
   spins.resize(positions.size());
+  vec3d area_dims_ = nx_*base1_ + ny_*base2_ + nz_*base3_;
   for (size_t ind = 0; ind < positions.size(); ++ind) {
     vec3d pos = positions[ind];
-    if (std::get<0>(pos) < nx_/2) {
-      spins[ind] = {0, 0, -1};
-    } else {
+    if (domain_wall_direction_ == 'z') {
+      if (std::get<2>(pos) < std::get<2>(area_dims_)/2) {
+        spins[ind] = {0, 0, -1};
+      } else {
+        spins[ind] = {0, 0, 1};
+      }
+    } else if (domain_wall_direction_ == 'x') {
+      if (std::get<0>(pos) < std::get<0>(area_dims_)/2) {
+        spins[ind] = {0, 0, -1};
+      } else {
+        spins[ind] = {0, 0, 1};
+      }
+    } else if (domain_wall_direction_ == '0') {
       spins[ind] = {0, 0, 1};
+    } else {
+      fprintf(stderr, "unknown domain wall direction: %c\n", domain_wall_direction_);
+      exit(1);
     }
+
     // spins[ind] = {0, 0, 1};
   }
   return spins;

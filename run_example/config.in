@@ -1,6 +1,6 @@
-nx 10
-ny 10
-nz 10
+nx 5
+ny 5
+nz 300
 anisotropy -5.83e-24
 symmetry_file sym.mat
 exchange_file exchange_turek.in
@@ -11,5 +11,6 @@ damping 0.1
 temperature 0.01
 periodic_x 1
 periodic_y 1
-periodic_z 1
+periodic_z 0
 dump_exchange 1
+domain_wall_direction z

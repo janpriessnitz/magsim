@@ -76,6 +76,8 @@ public:
   bool periodic_x_;
   bool periodic_y_;
   bool periodic_z_;
+
+  char domain_wall_direction_;
 };
 
 

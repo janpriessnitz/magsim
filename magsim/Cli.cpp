@@ -6,13 +6,19 @@
 #include <cstdio>
 #include <string>
 #include <chrono>
+#include <filesystem>
 
 int main(int argc, char **argv) {
+
+  std::string out_dir = "output/";
+  if (!std::filesystem::create_directory(out_dir)) {
+    fprintf(stderr, "failed to create output directory %s\n", out_dir.c_str());
+  }
+
   MapReader reader(argv[1]);
   HcpCobaltGenerator gen(reader);
   printf("generating spin lattice\n");
   SpinLattice lat = gen.Generate();
-  printf("spin lattice generated\n");
 
   SpinDynamics* dyn = new SpinDynamics(&lat);
   dyn->alpha_ = reader.GetFloat("damping");
@@ -20,7 +26,11 @@ int main(int argc, char **argv) {
   dyn->timestep_ = reader.GetFloat("timestep");
 
   printf("dumping positions\n");
-  lat.DumpPositions("positions.out");
+  lat.DumpPositions(out_dir + "positions.out");
+
+  if (reader.GetInt("dump_exchange")) {
+    lat.DumpExchange(out_dir + "exchange.out");
+  }
 
   printf("starting sim\n");
 
@@ -35,7 +45,7 @@ int main(int argc, char **argv) {
     dyn->lattice_->PrintEnergy();
     auto avgm = dyn->lattice_->AvgM();
     printf("%s %lf\n", to_string(avgm).c_str(), mag(avgm));
-    dyn->lattice_->DumpLattice("lattice.out" + std::to_string(j));
+    dyn->lattice_->DumpLattice(out_dir + "lattice.out" + std::to_string(j));
   }
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);

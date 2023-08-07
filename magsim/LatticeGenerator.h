@@ -66,6 +66,7 @@ public:
     {0, 0, 0},
     (1/3.0)*(base1_ + base2_) + (1/2.0)*base3_
   };
+  vec3d area_dims_;
 
   mat3d base_mat_inv_ = inverse(base_mat_);
 
@@ -78,6 +79,7 @@ public:
   bool periodic_z_;
 
   char domain_wall_direction_;
+  double middle_space_;
 };
 
 

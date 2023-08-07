@@ -9,6 +9,7 @@ HcpCobaltGenerator::HcpCobaltGenerator(const MapReader & config) {
   nx_ = config.GetInt("nx");
   ny_ = config.GetInt("ny");
   nz_ = config.GetInt("nz");
+  area_dims_ = nx_*base1_ + ny_*base2_ + nz_*base3_;
   Co_anis_ = config.GetFloat("anisotropy");
   symmetry_fname_ = config.GetString("symmetry_file");
   exchange_fname_ = config.GetString("exchange_file");
@@ -18,6 +19,7 @@ HcpCobaltGenerator::HcpCobaltGenerator(const MapReader & config) {
   periodic_z_ = config.GetInt("periodic_z") != 0;
 
   domain_wall_direction_ = config.GetChar("domain_wall_direction");
+  middle_space_ = config.GetFloat("middle_space");
 }
 
 SpinLattice HcpCobaltGenerator::Generate() const {
@@ -54,7 +56,20 @@ std::vector<vec3d> HcpCobaltGenerator::GeneratePositions() const {
         vec3d unit_cell_pos = curx*base1_ + cury*base2_ + curz*base3_;
         for (const vec3d & spin_pos : spin_pos_list) {
           vec3d pos = unit_cell_pos + spin_pos;
+          if (domain_wall_direction_ == 'z') {
+            double center_z = std::get<2>(area_dims_)/2;
+            if (abs(center_z - std::get<2>(pos)) < middle_space_)
+              continue;
+          } else if (domain_wall_direction_ == 'x') {
+            double center_x = std::get<0>(area_dims_)/2;
+            if (abs(center_x - std::get<0>(pos)) < middle_space_)
+              continue;
+          } else {
+            fprintf(stderr, "GeneratePositions: unknown domain wall direction: %c\n", domain_wall_direction_);
+            exit(1);
+          }
           positions.emplace_back(pos);
+
         }
       }
     }
@@ -98,7 +113,6 @@ std::vector<std::vector<std::tuple<size_t, real>>> HcpCobaltGenerator::GenerateE
 std::vector<vec3d> HcpCobaltGenerator::GenerateSpins(const std::vector<vec3d> & positions) const {
   std::vector<vec3d> spins;
   spins.resize(positions.size());
-  vec3d area_dims_ = nx_*base1_ + ny_*base2_ + nz_*base3_;
   for (size_t ind = 0; ind < positions.size(); ++ind) {
     vec3d pos = positions[ind];
     if (domain_wall_direction_ == 'z') {

@@ -20,6 +20,7 @@ HcpCobaltGenerator::HcpCobaltGenerator(const MapReader & config) {
 
   domain_wall_direction_ = config.GetChar("domain_wall_direction");
   middle_space_ = config.GetFloat("middle_space");
+  middle_offset_ = config.GetFloat("middle_offset");
 }
 
 SpinLattice HcpCobaltGenerator::Generate() const {
@@ -57,11 +58,11 @@ std::vector<vec3d> HcpCobaltGenerator::GeneratePositions() const {
         for (const vec3d & spin_pos : spin_pos_list) {
           vec3d pos = unit_cell_pos + spin_pos;
           if (domain_wall_direction_ == 'z') {
-            double center_z = std::get<2>(area_dims_)/2;
+            double center_z = std::get<2>(area_dims_)/2 + middle_offset_;
             if (abs(center_z - std::get<2>(pos)) < middle_space_)
               continue;
           } else if (domain_wall_direction_ == 'x') {
-            double center_x = std::get<0>(area_dims_)/2;
+            double center_x = std::get<0>(area_dims_)/2 + middle_offset_;
             if (abs(center_x - std::get<0>(pos)) < middle_space_)
               continue;
           } else {

@@ -2,13 +2,14 @@
 #include "Constants.h"
 
 #include <omp.h>
-
-int seed = 123456;
+#include <chrono>
 
 SpinDynamics::SpinDynamics(SpinLattice *lattice, Timer & timer)
   : lattice_(lattice)
   , timer_(timer)
 {
+  std::chrono::nanoseconds seed_ns = std::chrono::system_clock::now().time_since_epoch();
+  uint32_t seed = seed_ns.count();
   int max_threads = omp_get_max_threads();
   rng_engs_.resize(max_threads);
   for (int i = 0; i < max_threads; ++i) {

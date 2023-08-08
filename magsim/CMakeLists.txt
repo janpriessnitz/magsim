@@ -7,6 +7,7 @@ set ( MAGSIM_SOURCES
     TupleReader.cpp
     SpinDynamics.cpp
     LatticeGenerator.cpp
+    Timer.cpp
 )
 
 add_executable(magsim Cli.cpp ${MAGSIM_SOURCES})

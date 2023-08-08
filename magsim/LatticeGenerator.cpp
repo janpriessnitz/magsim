@@ -5,7 +5,9 @@
 #include <cmath>
 
 
-HcpCobaltGenerator::HcpCobaltGenerator(const MapReader & config) {
+HcpCobaltGenerator::HcpCobaltGenerator(const MapReader & config, Timer & timer)
+  : timer_(timer)
+{
   nx_ = config.GetInt("nx");
   ny_ = config.GetInt("ny");
   nz_ = config.GetInt("nz");
@@ -29,7 +31,7 @@ SpinLattice HcpCobaltGenerator::Generate() const {
 
   PointLookup point_lookup(positions);
 
-  SpinLattice res;
+  SpinLattice res(timer_);
   res.positions_ = positions;
   res.anisotropy_ = Co_anis_;
 
@@ -84,6 +86,8 @@ std::vector<std::vector<std::tuple<size_t, real>>> HcpCobaltGenerator::GenerateE
   const std::vector<std::tuple<vec3d, real>> & ints,
   const std::vector<mat3d> & syms) const
 {
+  auto start = std::chrono::high_resolution_clock::now();
+
   std::vector<std::vector<std::tuple<size_t, real>>> exch_list;
   exch_list.resize(point_lookup.points_.size());
 
@@ -106,6 +110,8 @@ std::vector<std::vector<std::tuple<size_t, real>>> HcpCobaltGenerator::GenerateE
     one_exch.insert(one_exch.end(), one_exch_map.begin(), one_exch_map.end());
     exch_list[ind] = one_exch;
   }
+  auto stop = std::chrono::high_resolution_clock::now();
+  timer_.AddTime(stop - start, Timer::Section::GenExchange);
   return exch_list;
 }
 

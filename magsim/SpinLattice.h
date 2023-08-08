@@ -7,11 +7,12 @@
 
 #include "Config.h"
 #include "Util.h"
+#include "Timer.h"
 
 
 class SpinLattice {
 public:
-  SpinLattice();
+  SpinLattice(Timer & timer);
   ~SpinLattice();
 
   static SpinLattice GenerateFefcc();
@@ -37,6 +38,8 @@ public:
   void ComputeExch(std::vector<vec3d> & Heffs, const std::vector<vec3d> spins) const;
 
   std::vector<vec3d> positions_;
+
+  Timer & timer_;
 };
 
 #endif // SIMULATION_H

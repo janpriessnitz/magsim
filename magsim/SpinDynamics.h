@@ -8,7 +8,7 @@ class SpinDynamics {
 public:
   static constexpr real kGyromagneticRatio = 1;
 
-  explicit SpinDynamics(SpinLattice *lattice);
+  explicit SpinDynamics(SpinLattice *lattice, Timer & timer);
   ~SpinDynamics();
 
   void DoStep();
@@ -32,6 +32,8 @@ public:
   std::vector<vec3d> Heffs_prime_;
   std::vector<vec3d> spins_prime_;
   std::vector<vec3d> temp_field_;
+
+  Timer & timer_;
 };
 
 #endif

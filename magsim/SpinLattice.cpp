@@ -3,8 +3,11 @@
 
 #include <cstdio>
 #include <unordered_map>
+#include <chrono>
 
-SpinLattice::SpinLattice() {
+SpinLattice::SpinLattice(Timer & timer)
+  : timer_(timer)
+{
 }
 
 SpinLattice::~SpinLattice() {
@@ -22,8 +25,8 @@ real J1 = 1;
 
 SpinLattice SpinLattice::GenerateFefcc() {
 
-
-  SpinLattice lat;
+  Timer t;
+  SpinLattice lat(t);
   lat.anisotropy_ = 0.020;
   lat.exchange_.resize(2*N*N*N);
   lat.spins_.resize(2*N*N*N);
@@ -67,14 +70,16 @@ SpinLattice SpinLattice::GenerateFefcc() {
   return lat;
 }
 
-
 void SpinLattice::DumpLattice(const std::string &fname) const {
+  auto start = std::chrono::high_resolution_clock::now();
   FILE *fp = fopen(fname.c_str(), "w");
   for (size_t i = 0; i < spins_.size(); ++i) {
     auto [x, y, z] = spins_[i];
     fprintf(fp, "%lf %lf %lf\n", x, y, z);
   }
   fclose(fp);
+  auto stop = std::chrono::high_resolution_clock::now();
+  timer_.AddTime(stop - start, Timer::Section::Dump);
 }
 
 void SpinLattice::DumpPositions(const std::string &fname) const {
@@ -87,6 +92,8 @@ void SpinLattice::DumpPositions(const std::string &fname) const {
 }
 
 void SpinLattice::DumpProfile(const std::string &fname, char direction) const {
+  auto start = std::chrono::high_resolution_clock::now();
+
   std::unordered_map<real, real> sums;
   std::unordered_map<real, size_t> counts;
   for (size_t ind = 0; ind < spins_.size(); ++ind) {
@@ -109,6 +116,8 @@ void SpinLattice::DumpProfile(const std::string &fname, char direction) const {
     fprintf(fp, "%lf %lf\n", s.first, s.second/counts[s.first]);
   }
   fclose(fp);
+  auto stop = std::chrono::high_resolution_clock::now();
+  timer_.AddTime(stop - start, Timer::Section::Dump);
 }
 
 
@@ -124,10 +133,14 @@ void SpinLattice::DumpExchange(const std::string &fname) const {
 }
 
 void SpinLattice::ComputeHeffs(const std::vector<vec3d> spins, std::vector<vec3d> & Heffs) const {
+  auto start = std::chrono::high_resolution_clock::now();
+
   Heffs.resize(spins.size());
 
   this->ComputeAnis(Heffs, spins);
   this->ComputeExch(Heffs, spins);
+  auto end = std::chrono::high_resolution_clock::now();
+  timer_.AddTime(end - start, Timer::Section::Heff);
 }
 
 void SpinLattice::ComputeHeffs(std::vector<vec3d> & Heffs) const {

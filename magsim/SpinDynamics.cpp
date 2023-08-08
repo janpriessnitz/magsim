@@ -5,8 +5,9 @@
 
 int seed = 123456;
 
-SpinDynamics::SpinDynamics(SpinLattice *lattice)
+SpinDynamics::SpinDynamics(SpinLattice *lattice, Timer & timer)
   : lattice_(lattice)
+  , timer_(timer)
 {
   int max_threads = omp_get_max_threads();
   rng_engs_.resize(max_threads);
@@ -36,6 +37,7 @@ void SpinDynamics::DoStep_Heun() {
   lattice_->ComputeHeffs(Heffs_);
   GetTemperatureField();
 
+  auto start = std::chrono::high_resolution_clock::now();
 
   #pragma omp parallel for
   for (size_t i = 0; i < n_spins; ++i) {
@@ -47,9 +49,12 @@ void SpinDynamics::DoStep_Heun() {
     spins_prime_[i] = oldspin + timestep_*GetSpinUpdate(oldspin, Heff);
     spins_prime_[i] = (1/mag(spins_prime_[i]))*spins_prime_[i];
   }
+  auto stop = std::chrono::high_resolution_clock::now();
+  timer_.AddTime(stop - start, Timer::Section::Integrator);
 
   lattice_->ComputeHeffs(spins_prime_, Heffs_prime_);
 
+  start = std::chrono::high_resolution_clock::now();
   #pragma omp parallel for
   for (size_t i = 0; i < n_spins; ++i) {
     vec3d Heff = (-1/constants::mu_B)*Heffs_[i];
@@ -63,6 +68,9 @@ void SpinDynamics::DoStep_Heun() {
     vec3d newspin = oldspin + (timestep_/2)*(GetSpinUpdate(oldspin, Heff) + GetSpinUpdate(spins_prime_[i], Heff_prime));
     lattice_->spins_[i] = normalize(newspin);
   }
+
+  stop = std::chrono::high_resolution_clock::now();
+  timer_.AddTime(stop - start, Timer::Section::Integrator);
 }
 
 void SpinDynamics::DoStep_Stupid() {
@@ -95,6 +103,8 @@ inline vec3d SpinDynamics::GetSpinUpdate(vec3d spin, vec3d Heff) const {
 }
 
 void SpinDynamics::GetTemperatureField() {
+  auto start = std::chrono::high_resolution_clock::now();
+
   temp_field_.resize(lattice_->spins_.size());
   real temp_field_mag = sqrt(2*alpha_*constants::boltzmann*temperature_/(timestep_*constants::gyromagnetic_ratio*constants::mu_B));
   auto norm_dist = std::normal_distribution<real>(0, 1);
@@ -104,4 +114,6 @@ void SpinDynamics::GetTemperatureField() {
                                          norm_dist(rng_engs_[omp_get_thread_num()]),
                                          norm_dist(rng_engs_[omp_get_thread_num()])};
   }
+  auto stop = std::chrono::high_resolution_clock::now();
+  timer_.AddTime(stop - start, Timer::Section::Temperature);
 }

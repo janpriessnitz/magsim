@@ -9,6 +9,7 @@
 #include <filesystem>
 
 int main(int argc, char **argv) {
+  Timer timer;
 
   std::string out_dir = "output/";
   if (!std::filesystem::create_directory(out_dir)) {
@@ -16,11 +17,11 @@ int main(int argc, char **argv) {
   }
 
   MapReader reader(argv[1]);
-  HcpCobaltGenerator gen(reader);
+  HcpCobaltGenerator gen(reader, timer);
   printf("generating spin lattice\n");
   SpinLattice lat = gen.Generate();
 
-  SpinDynamics* dyn = new SpinDynamics(&lat);
+  SpinDynamics* dyn = new SpinDynamics(&lat, timer);
   dyn->alpha_ = reader.GetFloat("damping");
   dyn->temperature_ = reader.GetFloat("temperature");
   dyn->timestep_ = reader.GetFloat("timestep");
@@ -51,5 +52,6 @@ int main(int argc, char **argv) {
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
   printf("took %lu ms\n", duration.count());
+  timer.PrintStatistics();
   return 0;
 }

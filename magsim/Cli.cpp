@@ -46,6 +46,7 @@ int main(int argc, char **argv) {
     auto avgm = dyn->lattice_->AvgM();
     printf("%s %lf\n", to_string(avgm).c_str(), mag(avgm));
     dyn->lattice_->DumpLattice(out_dir + "lattice.out" + std::to_string(j));
+    dyn->lattice_->DumpProfile(out_dir + "profile.out" + std::to_string(j), reader.GetChar("domain_wall_direction"));
   }
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);

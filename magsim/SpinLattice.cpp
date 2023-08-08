@@ -2,7 +2,7 @@
 #include "Constants.h"
 
 #include <cstdio>
-
+#include <unordered_map>
 
 SpinLattice::SpinLattice() {
 }
@@ -85,6 +85,32 @@ void SpinLattice::DumpPositions(const std::string &fname) const {
   }
   fclose(fp);
 }
+
+void SpinLattice::DumpProfile(const std::string &fname, char direction) const {
+  std::unordered_map<real, real> sums;
+  std::unordered_map<real, size_t> counts;
+  for (size_t ind = 0; ind < spins_.size(); ++ind) {
+    auto [sx, sy, sz] = spins_[ind];
+    auto [x, y, z] = positions_[ind];
+    if (direction == 'x') {
+      sums[x] += sz;
+      counts[x]++;
+    } else if (direction == 'z') {
+      sums[z] += sz;
+      counts[z]++;
+    } else {
+      fprintf(stderr, "DumpProfile: unknown direction %c", direction);
+      exit(1);
+    }
+  }
+
+  FILE *fp = fopen(fname.c_str(), "w");
+  for(const auto & s : sums) {
+    fprintf(fp, "%lf %lf\n", s.first, s.second/counts[s.first]);
+  }
+  fclose(fp);
+}
+
 
 void SpinLattice::DumpExchange(const std::string &fname) const {
   FILE *fp = fopen(fname.c_str(), "w");

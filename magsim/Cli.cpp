@@ -13,6 +13,9 @@ int main(int argc, char **argv) {
   Timer timer;
 
   std::string out_dir = "output/";
+  if (argc > 2) {
+    out_dir = argv[2];
+  }
   if (!std::filesystem::create_directory(out_dir)) {
     fprintf(stderr, "failed to create output directory %s\n", out_dir.c_str());
   }

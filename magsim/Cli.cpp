@@ -2,6 +2,7 @@
 #include "ConfigReader.h"
 #include "SpinDynamics.h"
 #include "LatticeGenerator.h"
+#include "CoRuCoGenerator.h"
 
 #include <cstdio>
 #include <string>
@@ -17,7 +18,7 @@ int main(int argc, char **argv) {
   }
 
   MapReader reader(argv[1]);
-  HcpCobaltGenerator gen(reader, timer);
+  CoRuCoGenerator gen(reader, timer);
   printf("generating spin lattice\n");
   SpinLattice lat = gen.Generate();
 
@@ -26,8 +27,9 @@ int main(int argc, char **argv) {
   dyn->temperature_ = reader.GetFloat("temperature");
   dyn->timestep_ = reader.GetFloat("timestep");
 
-  printf("dumping positions\n");
+  printf("dumping positions xyz\n");
   lat.DumpPositions(out_dir + "positions.out");
+  lat.DumpXYZ(out_dir + "positions.xyz");
 
   if (reader.GetInt("dump_exchange")) {
     lat.DumpExchange(out_dir + "exchange.out");

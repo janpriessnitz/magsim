@@ -91,6 +91,18 @@ void SpinLattice::DumpPositions(const std::string &fname) const {
   fclose(fp);
 }
 
+void SpinLattice::DumpXYZ(const std::string &fname) const {
+  FILE *fp = fopen(fname.c_str(), "w");
+  fprintf(fp, "%lu\ncomment\n", positions_.size());
+
+  for (size_t i = 0; i < positions_.size(); ++i) {
+    auto [x, y, z] = positions_[i];
+    fprintf(fp, "%lf %lf %lf\n", x, y, z);
+  }
+  fclose(fp);
+}
+
+
 void SpinLattice::DumpProfile(const std::string &fname, char direction) const {
   auto start = std::chrono::high_resolution_clock::now();
 
@@ -176,7 +188,6 @@ void SpinLattice::PrintEnergy() const {
     real zmag = std::get<2>(spins_[i]);
     anis_en += anisotropy_*zmag*zmag;
   }
-  anis_en /= spins_.size();
 
   real exch_en = 0;
   for (size_t i = 0; i < spins_.size(); ++i) {
@@ -186,8 +197,11 @@ void SpinLattice::PrintEnergy() const {
       exch_en -= J*scal_prod(spins_[i], spins_[spin_ind]);
     }
   }
-  exch_en /= spins_.size()*2;  // double counting
-  printf("anis: %lg mRy, exch: %lg mRy\n", anis_en/constants::Ry*1000, exch_en/constants::Ry*1000);
+  exch_en /= 2;  // double counting
+  printf("tot  - anis: %lg mRy, exch: %lg mRy\n", anis_en/constants::Ry*1000, exch_en/constants::Ry*1000);
+  anis_en /= spins_.size();
+  exch_en /= spins_.size();
+  printf("p/at - anis: %lg mRy, exch: %lg mRy\n", anis_en/constants::Ry*1000, exch_en/constants::Ry*1000);
 }
 
 vec3d SpinLattice::AvgM() const {

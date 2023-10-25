@@ -1,4 +1,5 @@
 set ( MAGSIM_SOURCES
+    CoRuCoGenerator.cpp
     SpinLattice.cpp
     Util.cpp
     Config.cpp

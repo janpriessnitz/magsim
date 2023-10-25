@@ -19,6 +19,7 @@ public:
 
   void DumpLattice(const std::string &fname) const;
   void DumpPositions(const std::string &fname) const;
+  void DumpXYZ(const std::string &fname) const;
   void DumpProfile(const std::string &fname, char direction) const;
   void DumpExchange(const std::string &fname) const;
 

@@ -1,48 +1,20 @@
-#ifndef LATTICEGENERATOR_H
-#define LATTICEGENERATOR_H
+#ifndef CORUCOGENERATOR_H
+#define CORUCOGENERATOR_H
 
 #include <vector>
 #include <unordered_map>
 #include <optional>
 
+#include "Constants.h"
+#include "LatticeGenerator.h"
 #include "SpinLattice.h"
 #include "Util.h"
 #include "MapReader.h"
 
-static constexpr real tol = 0.1;
 
-class PointLookup {
+class CoRuCoGenerator : LatticeGenerator {
 public:
-
-  PointLookup(std::vector<vec3d> point_list);
-
-  // std::tuple<size_t, vec3d> GetClosest(const vec3d & pos) const;
-  std::optional<size_t> GetExact(const vec3d & pos) const;
-
-  std::optional<size_t> GetCubeIndex(int x, int y, int z) const;
-  std::optional<size_t> GetCubeIndex(const vec3d & pos) const;
-
-  std::tuple<int, int, int> GetCubeCoords(const vec3d & pos) const;
-
-  std::vector<vec3d> points_;
-
-  vec3d origin_;
-  real cube_side_;
-  size_t n_x_, n_y_, n_z_;
-  std::vector<std::vector<std::tuple<size_t, vec3d>>> grid_;
-};
-
-class LatticeGenerator {
-public:
-  LatticeGenerator() {
-
-  };
-  virtual SpinLattice Generate() const = 0;
-};
-
-class HcpCobaltGenerator : LatticeGenerator {
-public:
-  HcpCobaltGenerator(const MapReader & config, Timer & timer);
+  CoRuCoGenerator(const MapReader & config, Timer & timer);
 
   SpinLattice Generate() const;
 
@@ -78,12 +50,11 @@ public:
   bool periodic_y_;
   bool periodic_z_;
 
-  char domain_wall_direction_;
-  double middle_space_;
-  double middle_offset_;
+  double interface_exchange_energy_ = 0.3/4/constants::J_eV;
+
+  char spin_direction_;
 
   Timer & timer_;
 };
 
-
-#endif // LATTICEGENERATOR_H
+#endif //CORUCOGENERATOR_H

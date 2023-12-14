@@ -1,20 +1,18 @@
-nx 10
-ny 10
-nz 300
+nx 15
+ny 15
+nz 400
 anisotropy -5.83e-24
 symmetry_file sym.mat
 exchange_file exchange_turek.in
-num_step 100
+num_step 200
 num_substep 5000
-timestep 5e-16
+timestep 2e-16
 damping 0.1
-temperature 0.01
+temperature $TEMP
 periodic_x 1
 periodic_y 1
 periodic_z 0
 dump_exchange 1
 domain_wall_direction z
-# middle_space 0
-# middle_offset 0
-interface_J 0.00275
-spin_direction z
+interface_J -0.00275
+spin_direction 0

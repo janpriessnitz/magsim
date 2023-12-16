@@ -14,7 +14,7 @@
 
 class CoRuCoGenerator : LatticeGenerator {
 public:
-  CoRuCoGenerator(const MapReader & config, Timer & timer);
+  CoRuCoGenerator(const MapReader & config);
 
   SpinLattice Generate() const;
 
@@ -53,8 +53,6 @@ public:
   double interface_exchange_energy_ = 0.3/4/constants::J_eV;
 
   char spin_direction_;
-
-  Timer & timer_;
 };
 
 #endif //CORUCOGENERATOR_H

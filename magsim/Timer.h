@@ -13,9 +13,10 @@ public:
     Integrator,
     Dump,
     Temperature,
-    GenExchange
+    GenExchange,
+    Averages,
   };
-  const static size_t n_section = 5;
+  const static size_t n_section = 6;
 
   Timer();
   void AddTime(std::chrono::nanoseconds duration_ns, Section section);
@@ -25,5 +26,7 @@ public:
   // indices correspond to the Section enum elements
   uint64_t durations_ns_[n_section];
 };
+
+extern Timer global_timer;
 
 #endif

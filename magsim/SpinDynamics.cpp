@@ -4,34 +4,24 @@
 #include <omp.h>
 #include <chrono>
 
-SpinDynamics::SpinDynamics(SpinLattice *lattice, Timer & timer)
-  : lattice_(lattice)
-  , timer_(timer)
+SpinDynamics::SpinDynamics(SpinLattice *lattice)
+  : Simulation(lattice)
 {
-  std::chrono::nanoseconds seed_ns = std::chrono::system_clock::now().time_since_epoch();
-  uint32_t seed = seed_ns.count();
-  int max_threads = omp_get_max_threads();
-  rng_engs_.resize(max_threads);
-  for (int i = 0; i < max_threads; ++i) {
-    rng_engs_[i] = std::mt19937(seed + i);
-  }
+  size_t n_spins = lattice_->NumSpins();
+  Heffs_.resize(n_spins);
+  temp_field_.resize(n_spins);
 }
-
-SpinDynamics::~SpinDynamics() {
-
-}
-
 
 // Heun
 void SpinDynamics::DoStep() {
   DoStep_Heun();
   // DoStep_Stupid();
+  lattice_->SampleAverages();
 }
 
 void SpinDynamics::DoStep_Heun() {
-  size_t n_spins = lattice_->spins_.size();
+  size_t n_spins = lattice_->NumSpins();
 
-  Heffs_.resize(n_spins);
   Heffs_prime_.resize(n_spins);
   spins_prime_.resize(n_spins);
 
@@ -51,7 +41,7 @@ void SpinDynamics::DoStep_Heun() {
     spins_prime_[i] = (1/mag(spins_prime_[i]))*spins_prime_[i];
   }
   auto stop = std::chrono::high_resolution_clock::now();
-  timer_.AddTime(stop - start, Timer::Section::Integrator);
+  global_timer.AddTime(stop - start, Timer::Section::Integrator);
 
   lattice_->ComputeHeffs(spins_prime_, Heffs_prime_);
 
@@ -71,11 +61,11 @@ void SpinDynamics::DoStep_Heun() {
   }
 
   stop = std::chrono::high_resolution_clock::now();
-  timer_.AddTime(stop - start, Timer::Section::Integrator);
+  global_timer.AddTime(stop - start, Timer::Section::Integrator);
 }
 
 void SpinDynamics::DoStep_Stupid() {
-  size_t n_spins = lattice_->spins_.size();
+  size_t n_spins = lattice_->NumSpins();
 
   Heffs_.resize(n_spins);
   lattice_->ComputeHeffs(Heffs_);
@@ -84,7 +74,7 @@ void SpinDynamics::DoStep_Stupid() {
   #pragma omp parallel
   {
     #pragma omp for simd
-    for (size_t i = 0; i < lattice_->spins_.size(); ++i) {
+    for (size_t i = 0; i < lattice_->NumSpins(); ++i) {
       vec3d Heff = - (1/constants::mu_B)*Heffs_[i];
       Heff = Heff + temp_field_[i];
 
@@ -106,15 +96,12 @@ inline vec3d SpinDynamics::GetSpinUpdate(vec3d spin, vec3d Heff) const {
 void SpinDynamics::GetTemperatureField() {
   auto start = std::chrono::high_resolution_clock::now();
 
-  temp_field_.resize(lattice_->spins_.size());
   real temp_field_mag = sqrt(2*alpha_*constants::boltzmann*temperature_/(timestep_*constants::gyromagnetic_ratio*constants::mu_B));
-  auto norm_dist = std::normal_distribution<real>(0, 1);
-  #pragma omp parallel for private(norm_dist)
-  for (size_t i = 0; i < lattice_->spins_.size(); ++i) {
-    temp_field_[i] = temp_field_mag*vec3d{norm_dist(rng_engs_[omp_get_thread_num()]),
-                                         norm_dist(rng_engs_[omp_get_thread_num()]),
-                                         norm_dist(rng_engs_[omp_get_thread_num()])};
+  #pragma omp parallel for
+  for (size_t i = 0; i < temp_field_.size(); ++i) {
+    auto rnd_vec = rnd_gauss_vec(rng_engs_[omp_get_thread_num()]);
+    temp_field_[i] = temp_field_mag*rnd_vec;
   }
   auto stop = std::chrono::high_resolution_clock::now();
-  timer_.AddTime(stop - start, Timer::Section::Temperature);
+  global_timer.AddTime(stop - start, Timer::Section::Temperature);
 }

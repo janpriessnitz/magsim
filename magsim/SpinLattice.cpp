@@ -1,17 +1,11 @@
 #include "SpinLattice.h"
-#include "Constants.h"
 
+#include <algorithm>
+#include <chrono>
 #include <cstdio>
 #include <unordered_map>
-#include <chrono>
 
-SpinLattice::SpinLattice(Timer & timer)
-  : timer_(timer)
-{
-}
-
-SpinLattice::~SpinLattice() {
-}
+#include "Constants.h"
 
 size_t N = 2;
 static size_t index(int x, int y, int z, int t) {
@@ -24,9 +18,7 @@ static size_t index(int x, int y, int z, int t) {
 real J1 = 1;
 
 SpinLattice SpinLattice::GenerateFefcc() {
-
-  Timer t;
-  SpinLattice lat(t);
+  SpinLattice lat;
   lat.anisotropy_ = 0.020;
   lat.exchange_.resize(2*N*N*N);
   lat.spins_.resize(2*N*N*N);
@@ -70,23 +62,39 @@ SpinLattice SpinLattice::GenerateFefcc() {
   return lat;
 }
 
-void SpinLattice::DumpLattice(const std::string &fname) const {
+void SpinLattice::LoadLattice(const std::string &fname) {
+  FILE *fp = fopen(fname.c_str(), "r");
+  for (size_t i = 0; i < spins_.size(); ++i) {
+    int n = fscanf(fp, "%lg %lg %lg", &std::get<0>(spins_[i]), &std::get<1>(spins_[i]), &std::get<2>(spins_[i]));
+    if (n != 3) {
+      fprintf(stderr, "could not load lattice\n");
+      exit(1);
+    }
+  }
+  fclose(fp);
+}
+
+
+size_t SpinLattice::NumSpins() const {
+  return spins_.size();
+}
+
+void SpinLattice::DumpLattice(const std::string &fname, bool dump_average) const {
   auto start = std::chrono::high_resolution_clock::now();
   FILE *fp = fopen(fname.c_str(), "w");
   for (size_t i = 0; i < spins_.size(); ++i) {
-    auto [x, y, z] = spins_[i];
-    fprintf(fp, "%lf %lf %lf\n", x, y, z);
+    vec3d spin = dump_average ? avg_spins_[i]/n_avgs_ : spins_[i];
+    fprintf(fp, "%s\n", to_string(spin).c_str());
   }
   fclose(fp);
   auto stop = std::chrono::high_resolution_clock::now();
-  timer_.AddTime(stop - start, Timer::Section::Dump);
+  global_timer.AddTime(stop - start, Timer::Section::Dump);
 }
 
 void SpinLattice::DumpPositions(const std::string &fname) const {
   FILE *fp = fopen(fname.c_str(), "w");
   for (size_t i = 0; i < positions_.size(); ++i) {
-    auto [x, y, z] = positions_[i];
-    fprintf(fp, "%lf %lf %lf\n", x, y, z);
+    fprintf(fp, "%s\n", to_string(positions_[i]).c_str());
   }
   fclose(fp);
 }
@@ -96,40 +104,49 @@ void SpinLattice::DumpXYZ(const std::string &fname) const {
   fprintf(fp, "%lu\ncomment\n", positions_.size());
 
   for (size_t i = 0; i < positions_.size(); ++i) {
-    auto [x, y, z] = positions_[i];
-    fprintf(fp, "%lf %lf %lf\n", x, y, z);
+    fprintf(fp, "%s\n", to_string(positions_[i]).c_str());
   }
   fclose(fp);
 }
 
 
-void SpinLattice::DumpProfile(const std::string &fname, char direction) const {
+void SpinLattice::DumpProfile(const std::string &fname, char direction, bool dump_average) const {
   auto start = std::chrono::high_resolution_clock::now();
 
-  std::unordered_map<real, real> sums;
-  std::unordered_map<real, size_t> counts;
+  std::unordered_map<real, std::pair<vec3d, size_t>> sums;
   for (size_t ind = 0; ind < spins_.size(); ++ind) {
-    auto [sx, sy, sz] = spins_[ind];
+    vec3d spin;
+    if (dump_average) {
+      spin = avg_spins_[ind]/n_avgs_;
+    } else {
+      spin = spins_[ind];
+    }
     auto [x, y, z] = positions_[ind];
     if (direction == 'x') {
-      sums[x] += sz;
-      counts[x]++;
+      sums[x].first += spin;
+      sums[x].second++;
+    } else if (direction == 'y') {
+      sums[y].first += spin;
+      sums[y].second++;
     } else if (direction == 'z') {
-      sums[z] += sz;
-      counts[z]++;
+      sums[z].first += spin;
+      sums[z].second++;
     } else {
       fprintf(stderr, "DumpProfile: unknown direction %c", direction);
       exit(1);
     }
   }
-
+  // order by position
+  std::vector<std::pair<real, std::pair<vec3d, size_t>>> sum_list;
+  sum_list.insert(sum_list.begin(), sums.begin(), sums.end());
+  std::sort(sum_list.begin(), sum_list.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
   FILE *fp = fopen(fname.c_str(), "w");
-  for(const auto & s : sums) {
-    fprintf(fp, "%lf %lf\n", s.first, s.second/counts[s.first]);
+  for(const auto & s : sum_list) {
+    fprintf(fp, "%lg %s\n", s.first, to_string(s.second.first/s.second.second).c_str());
   }
   fclose(fp);
   auto stop = std::chrono::high_resolution_clock::now();
-  timer_.AddTime(stop - start, Timer::Section::Dump);
+  global_timer.AddTime(stop - start, Timer::Section::Dump);
 }
 
 
@@ -152,7 +169,7 @@ void SpinLattice::ComputeHeffs(const std::vector<vec3d> spins, std::vector<vec3d
   this->ComputeAnis(Heffs, spins);
   this->ComputeExch(Heffs, spins);
   auto end = std::chrono::high_resolution_clock::now();
-  timer_.AddTime(end - start, Timer::Section::Heff);
+  global_timer.AddTime(end - start, Timer::Section::Heff);
 }
 
 void SpinLattice::ComputeHeffs(std::vector<vec3d> & Heffs) const {
@@ -180,6 +197,29 @@ void SpinLattice::ComputeExch(std::vector<vec3d> & Heffs, const std::vector<vec3
     }
     Heffs[i] = Heffs[i] + J_field;
   }
+}
+
+void SpinLattice::SampleAverages() {
+  auto start = std::chrono::high_resolution_clock::now();
+  #pragma omp parallel for simd
+  for (size_t i = 0; i < spins_.size(); ++i) {
+    avg_spins_[i] += spins_[i];
+  }
+  ++n_avgs_;
+  auto stop = std::chrono::high_resolution_clock::now();
+  global_timer.AddTime(stop - start, Timer::Section::Averages);
+
+}
+
+void SpinLattice::ResetAverages() {
+  auto start = std::chrono::high_resolution_clock::now();
+  #pragma omp parallel for simd
+  for (size_t i = 0; i < spins_.size(); ++i) {
+    avg_spins_[i] = {0, 0, 0};
+  }
+  n_avgs_ = 0;
+  auto stop = std::chrono::high_resolution_clock::now();
+  global_timer.AddTime(stop - start, Timer::Section::Averages);
 }
 
 void SpinLattice::PrintEnergy() const {

@@ -17,4 +17,7 @@ void Timer::PrintStatistics() const {
   printf("Dump: %lf s\n", durations_ns_[static_cast<size_t>(Section::Dump)]/1e9);
   printf("Temperature: %lf s\n", durations_ns_[static_cast<size_t>(Section::Temperature)]/1e9);
   printf("GenExchange: %lf s\n", durations_ns_[static_cast<size_t>(Section::GenExchange)]/1e9);
+  printf("Averages: %lf s\n", durations_ns_[static_cast<size_t>(Section::Averages)]/1e9);
 }
+
+Timer global_timer;

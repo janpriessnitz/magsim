@@ -35,9 +35,9 @@ prof = np.genfromtxt(os.path.join(output_dir, "profile.out0"))
 prof = fix_interface_width(prof)
 
 fig, ax = plt.subplots()
-ln, = ax.plot(prof[:,0], prof[:,1], linestyle='', marker='.')
+ln, = ax.plot(prof[:,0], prof[:,3], linestyle='', marker='.')
 
-fit_xs = np.array(sorted(prof[:,0]))
+fit_xs = prof[:,0]
 ln_fit, = ax.plot(fit_xs, tanh_model(fit_xs, 240, 30, 1))
 ax.set_ylim(-1, 1)
 
@@ -56,17 +56,18 @@ def update(i):
     # xs = pos[:,0]
     # ys = spins[:,2]
     # bin_means, bin_edges, binnumber = scipy.stats.binned_statistic(xs, ys, bins=200)
-    # scale = 2.47e-1
-    x0, delta, ms = fit_domain_wall(prof[:,0], prof[:,1])
-    # print("domain wall width [nm]: ", scale*delta)
+    scale = 2.47e-1
+    x0, delta, ms = fit_domain_wall(prof[:,0], prof[:,3])
+    print("domain wall width [nm]: ", scale*delta)
     widths.append(scale*delta)
-    ln.set_data(prof[:,0], prof[:,1])
-
+    ln.set_data(prof[:,0], prof[:,3])
     ln_fit.set_data(fit_xs, tanh_model(fit_xs, x0, delta, ms))
 
     return ln,
 
 n = 100
+if len(sys.argv) > 2:
+    n = int(sys.argv[2])
 ani = FuncAnimation(fig, update, frames=n,
                     init_func=init, blit=True)
 plt.show()

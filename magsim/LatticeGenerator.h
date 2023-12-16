@@ -42,7 +42,7 @@ public:
 
 class HcpCobaltGenerator : LatticeGenerator {
 public:
-  HcpCobaltGenerator(const MapReader & config, Timer & timer);
+  explicit HcpCobaltGenerator(const MapReader & config);
 
   SpinLattice Generate() const;
 
@@ -81,8 +81,6 @@ public:
   char domain_wall_direction_;
   double middle_space_;
   double middle_offset_;
-
-  Timer & timer_;
 };
 
 

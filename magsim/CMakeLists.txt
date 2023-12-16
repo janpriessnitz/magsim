@@ -1,14 +1,16 @@
 set ( MAGSIM_SOURCES
-    CoRuCoGenerator.cpp
-    SpinLattice.cpp
-    Util.cpp
     Config.cpp
-    MapReader.cpp
     ConfigReader.cpp
-    TupleReader.cpp
-    SpinDynamics.cpp
+    CoRuCoGenerator.cpp
     LatticeGenerator.cpp
+    MapReader.cpp
+    Metropolis.cpp
+    SimulationFactory.cpp
+    SpinDynamics.cpp
+    SpinLattice.cpp
     Timer.cpp
+    TupleReader.cpp
+    Util.cpp
 )
 
 add_executable(magsim Cli.cpp ${MAGSIM_SOURCES})

@@ -7,12 +7,40 @@ vec3d operator+(const vec3d& a, const vec3d& b) {
   return {std::get<0>(a) + std::get<0>(b), std::get<1>(a) + std::get<1>(b), std::get<2>(a) + std::get<2>(b)};
 }
 
+vec3d& operator+=(vec3d& a, const vec3d& b) {
+  a = a + b;
+  return a;
+}
+
 vec3d operator-(const vec3d& a, const vec3d& b) {
   return {std::get<0>(a) - std::get<0>(b), std::get<1>(a) - std::get<1>(b), std::get<2>(a) - std::get<2>(b)};
 }
 
+vec3d& operator-=(vec3d& a, const vec3d& b) {
+  a = a - b;
+  return a;
+}
+
 vec3d operator*(const real& a, const vec3d& b) {
   return {a*std::get<0>(b), a*std::get<1>(b), a*std::get<2>(b)};
+}
+
+vec3d operator*(const vec3d& a, const real& b) {
+  return b*a;
+}
+
+vec3d& operator*=(vec3d& a, const real& b) {
+  a = b*a;
+  return a;
+}
+
+vec3d operator/(const vec3d& a, const real& b) {
+  return {std::get<0>(a)/b, std::get<1>(a)/b, std::get<2>(a)/b};
+}
+
+vec3d& operator/=(vec3d& a, const real& b) {
+  a = a/b;
+  return a;
 }
 
 extern real scal_prod(const vec3d& a, const vec3d& b) {
@@ -67,31 +95,4 @@ extern std::string to_string(const vec3d& v) {
   return std::string(buf);
 }
 
-real rnd_uni(real min, real max) {
-  return std::uniform_real_distribution<>(min, max)(rnd_eng);
-}
-
-real rnd_norm(real mean, real stddev) {
-  return std::normal_distribution<real>(mean, stddev)(rnd_eng);
-}
-
-int64_t rnd_int(int64_t min, int64_t max) {
-  return std::uniform_int_distribution<>(min, max-1)(rnd_eng);
-}
-
-// TODO: not divide by sqrt(3) ?? to get unit variance
-vec3d rnd_gauss_vec() {
-  real x, y, z;
-  x = rnd_norm(0, 1);
-  y = rnd_norm(0, 1);
-  z = rnd_norm(0, 1);
-  vec3d vec = {x, y, z};
-  return vec;
-}
-
-vec3d rnd_unit_vec() {
-  vec3d vec = rnd_gauss_vec();
-  return (1/mag(vec))*vec;
-}
-
-std::default_random_engine rnd_eng(time(nullptr));
+std::default_random_engine global_rng_eng(time(nullptr));

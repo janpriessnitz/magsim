@@ -7,14 +7,12 @@
 #include <cmath>
 
 
-HcpCobaltGenerator::HcpCobaltGenerator(const MapReader & config, Timer & timer)
-  : timer_(timer)
-{
+HcpCobaltGenerator::HcpCobaltGenerator(const MapReader & config) {
   nx_ = config.GetInt("nx");
   ny_ = config.GetInt("ny");
   nz_ = config.GetInt("nz");
   area_dims_ = nx_*base1_ + ny_*base2_ + nz_*base3_;
-  Co_anis_ = config.GetFloat("anisotropy");
+  Co_anis_ = config.GetDouble("anisotropy");
   symmetry_fname_ = config.GetString("symmetry_file");
   exchange_fname_ = config.GetString("exchange_file");
 
@@ -23,8 +21,8 @@ HcpCobaltGenerator::HcpCobaltGenerator(const MapReader & config, Timer & timer)
   periodic_z_ = config.GetInt("periodic_z") != 0;
 
   domain_wall_direction_ = config.GetChar("domain_wall_direction");
-  middle_space_ = config.GetFloat("middle_space");
-  middle_offset_ = config.GetFloat("middle_offset");
+  middle_space_ = config.GetDouble("middle_space");
+  middle_offset_ = config.GetDouble("middle_offset");
 }
 
 SpinLattice HcpCobaltGenerator::Generate() const {
@@ -33,7 +31,7 @@ SpinLattice HcpCobaltGenerator::Generate() const {
 
   PointLookup point_lookup(positions);
 
-  SpinLattice res(timer_);
+  SpinLattice res;
   res.positions_ = positions;
   res.anisotropy_ = Co_anis_;
 
@@ -47,6 +45,8 @@ SpinLattice HcpCobaltGenerator::Generate() const {
 
   printf("generating spins\n");
   res.spins_ = GenerateSpins(positions);
+  res.avg_spins_ = res.spins_;
+  res.n_avgs_ = 1;
   return res;
 }
 
@@ -113,7 +113,7 @@ std::vector<std::vector<std::tuple<size_t, real>>> HcpCobaltGenerator::GenerateE
     exch_list[ind] = one_exch;
   }
   auto stop = std::chrono::high_resolution_clock::now();
-  timer_.AddTime(stop - start, Timer::Section::GenExchange);
+  global_timer.AddTime(stop - start, Timer::Section::GenExchange);
   return exch_list;
 }
 

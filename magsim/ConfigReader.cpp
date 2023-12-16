@@ -14,10 +14,10 @@ Config ConfigReader::ReadConfig() {
   conf.method = reader.GetChar("method");
   conf.lattice_w = reader.GetInt("lattice_w");
   conf.lattice_h = reader.GetInt("lattice_h");
-  conf.J = reader.GetFloat("J");
-  conf.D = reader.GetFloat("D");
-  conf.B = {0, 0, reader.GetFloat("Bz")};
-  conf.deltaSpin = reader.GetFloat("deltaSpin");
+  conf.J = reader.GetDouble("J");
+  conf.D = reader.GetDouble("D");
+  conf.B = {0, 0, reader.GetDouble("Bz")};
+  conf.deltaSpin = reader.GetDouble("deltaSpin");
   conf.annealing_sched = ReadAnnealingSched(reader.GetString("annealing_sched_file"));
   conf.lattice_dump_file = reader.GetString("lattice_dump_file");
 

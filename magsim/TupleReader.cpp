@@ -29,28 +29,20 @@ TupleReader::TupleReader(const std::string &filename) : filename_(filename) {
       row.emplace_back(token);
       buffer_helper = nullptr;
     }
-    data.push_back(row);
+    data_.push_back(row);
   }
 
   free(buffer);
   fclose(fp);
 }
-std::map<std::string, std::string> TupleReader::GetPairMap() {
-  std::map<std::string, std::string> result;
-  for ( auto &r : data) {
-    if (r.size() < 2) continue;
-    result[r[0]] = r[1];
-  }
-  return result;
-}
 
 long long TupleReader::GetInt(size_t r, size_t c) {
-  return strtoll(data[r][c].c_str(), nullptr, 10);
+  return strtoll(data_[r][c].c_str(), nullptr, 10);
 }
 double TupleReader::GetDouble(size_t r, size_t c) {
-  return strtod(data[r][c].c_str(), nullptr);
+  return strtod(data_[r][c].c_str(), nullptr);
 }
 
 size_t TupleReader::NumRows() {
-  return data.size();
+  return data_.size();
 }

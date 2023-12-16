@@ -13,13 +13,12 @@
 class TupleReader {
 public:
   TupleReader(const std::string &filename);
-  std::map<std::string, std::string> GetPairMap();
 
   long long GetInt(size_t r, size_t c);
   double GetDouble(size_t r, size_t c);
   size_t NumRows();
 
-  std::vector<std::vector<std::string>> data;
+  std::vector<std::vector<std::string>> data_;
 
 protected:
   std::string filename_;

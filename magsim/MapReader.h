@@ -4,16 +4,18 @@
 
 #include "TupleReader.h"
 
-class MapReader : public TupleReader {
+class MapReader : TupleReader {
 public:
   explicit MapReader(const std::string &filename);
 
   std::string GetString(const std::string &key) const;
   long long int GetInt(const std::string &key) const;
-  double GetFloat(const std::string &key) const;
+  double GetDouble(const std::string &key) const;
   char GetChar(const std::string &key) const;
 
-  std::map<std::string, std::string> data_map;
+  std::map<std::string, std::string> GetPairMap() const;
+
+  std::map<std::string, std::string> data_map_;
 };
 
 

@@ -8,21 +8,19 @@
 #include <cmath>
 
 
-CoRuCoGenerator::CoRuCoGenerator(const MapReader & config, Timer & timer)
-  : timer_(timer)
-{
+CoRuCoGenerator::CoRuCoGenerator(const MapReader & config) {
   nx_ = config.GetInt("nx");
   ny_ = config.GetInt("ny");
   nz_ = config.GetInt("nz");
   area_dims_ = nx_*base1_ + ny_*base2_ + nz_*base3_;
-  Co_anis_ = config.GetFloat("anisotropy");
+  Co_anis_ = config.GetDouble("anisotropy");
   symmetry_fname_ = config.GetString("symmetry_file");
   exchange_fname_ = config.GetString("exchange_file");
 
   periodic_x_ = config.GetInt("periodic_x") != 0;
   periodic_y_ = config.GetInt("periodic_y") != 0;
   periodic_z_ = config.GetInt("periodic_z") != 0;
-  interface_exchange_energy_ = config.GetFloat("interface_J")*constants::Ry;
+  interface_exchange_energy_ = config.GetDouble("interface_J")*constants::Ry;
   spin_direction_ = config.GetChar("spin_direction");
 }
 
@@ -32,7 +30,7 @@ SpinLattice CoRuCoGenerator::Generate() const {
 
   PointLookup point_lookup(positions);
 
-  SpinLattice res(timer_);
+  SpinLattice res;
   res.positions_ = positions;
   res.anisotropy_ = Co_anis_;
 
@@ -46,6 +44,8 @@ SpinLattice CoRuCoGenerator::Generate() const {
 
   printf("generating spins\n");
   res.spins_ = GenerateSpins(positions);
+  res.avg_spins_ = res.spins_;
+  res.n_avgs_ = 1;
   return res;
 }
 
@@ -107,7 +107,7 @@ std::vector<std::vector<std::tuple<size_t, real>>> CoRuCoGenerator::GenerateExch
     exch_list[ind] = one_exch;
   }
   auto stop = std::chrono::high_resolution_clock::now();
-  timer_.AddTime(stop - start, Timer::Section::GenExchange);
+  global_timer.AddTime(stop - start, Timer::Section::GenExchange);
 
   for (size_t ind = 0; ind < point_lookup.points_.size(); ++ind) {
     vec3d pos = point_lookup.points_[ind];

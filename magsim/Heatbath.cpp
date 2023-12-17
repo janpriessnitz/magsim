@@ -21,7 +21,7 @@ void Heatbath::DoStep() {
   #pragma omp parallel for
   for (size_t i = 0; i < n_spins; ++i) {
     vec3d old_spin = lattice_->spins_[i];
-    vec3d Heff = Heffs_[i];
+    vec3d Heff = -1*Heffs_[i];  // invert direction
     auto [Heff_x, Heff_y, Heff_z] = Heff;
     real Heff_mag = mag(Heff);
 

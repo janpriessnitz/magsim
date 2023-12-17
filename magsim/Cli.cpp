@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     sim->lattice_->PrintEnergy();
     auto avgm = sim->lattice_->AvgM();
     printf("%s %lf\n", to_string(avgm).c_str(), mag(avgm));
-    bool dump_avgs = false;
+    bool dump_avgs = true;
     sim->lattice_->DumpLattice(out_dir + "/lattice.out" + std::to_string(j), dump_avgs);
     sim->lattice_->DumpProfile(out_dir + "/profile.out" + std::to_string(j), reader.GetChar("domain_wall_direction"), dump_avgs);
     sim->lattice_->ResetAverages();

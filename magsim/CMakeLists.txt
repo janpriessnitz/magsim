@@ -2,6 +2,7 @@ set ( MAGSIM_SOURCES
     Config.cpp
     ConfigReader.cpp
     CoRuCoGenerator.cpp
+    Heatbath.cpp
     LatticeGenerator.cpp
     MapReader.cpp
     Metropolis.cpp

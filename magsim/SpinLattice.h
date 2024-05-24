@@ -36,7 +36,7 @@ public:
   std::vector<vec3d> avg_spins_;
   size_t n_avgs_;
 
-  real anisotropy_ = 0;
+  std::vector<real> anisotropy_;
   std::vector<std::vector<std::tuple<size_t, real>>> exchange_;
 
   vec3d AvgM() const;

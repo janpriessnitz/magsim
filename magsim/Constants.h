@@ -11,6 +11,7 @@ namespace constants {
     const real Ry = 2.179872325e-18;  // J
     const real Ry_eV = 13.605693009;  // eV
     const real J_eV = 6.241509126e18;  // eV
+    const real eV = 1/J_eV;  // eV
 }
 
 // real(dblprec) :: gama         = 1.760859644d11            ! s^(-1)*T^(-1)

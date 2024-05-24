@@ -32,7 +32,8 @@ SpinLattice CoRuCoGenerator::Generate() const {
 
   SpinLattice res;
   res.positions_ = positions;
-  res.anisotropy_ = Co_anis_;
+  // res.anisotropy_ = Co_anis_;
+  std::fill(res.anisotropy_.begin(), res.anisotropy_.end(), Co_anis_);
 
   printf("loading symmetries\n");
   auto syms = ConfigReader::ReadSymmetries(symmetry_fname_);

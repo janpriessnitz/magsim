@@ -13,4 +13,8 @@ cmake_install.cmake
 *.out
 
 magsim/magsim
+magsim/magsim_CoRuCo
+magsim/magsim_manual
 scratch
+
+FePt/

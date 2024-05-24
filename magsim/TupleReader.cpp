@@ -43,6 +43,10 @@ double TupleReader::GetDouble(size_t r, size_t c) {
   return strtod(data_[r][c].c_str(), nullptr);
 }
 
+std::string TupleReader::GetString(size_t r, size_t c) {
+  return data_[r][c];
+}
+
 size_t TupleReader::NumRows() {
   return data_.size();
 }

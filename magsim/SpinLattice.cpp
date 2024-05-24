@@ -19,7 +19,7 @@ real J1 = 1;
 
 SpinLattice SpinLattice::GenerateFefcc() {
   SpinLattice lat;
-  lat.anisotropy_ = 0.020;
+  lat.anisotropy_.resize(2*N*N*N, 0.020);
   lat.exchange_.resize(2*N*N*N);
   lat.spins_.resize(2*N*N*N);
 
@@ -183,7 +183,7 @@ void SpinLattice::ComputeAnis(std::vector<vec3d> & Heffs, const std::vector<vec3
   #pragma omp parallel for simd
   for (size_t i = 0; i < spins_.size(); ++i) {
     real zmag = std::get<2>(spins_[i]);
-    Heffs[i] = {0, 0, 2*anisotropy_*zmag};
+    Heffs[i] = {0, 0, 2*anisotropy_[i]*zmag};
   }
 }
 
@@ -226,7 +226,7 @@ void SpinLattice::PrintEnergy() const {
   real anis_en = 0;
   for (size_t i = 0; i < spins_.size(); ++i) {
     real zmag = std::get<2>(spins_[i]);
-    anis_en += anisotropy_*zmag*zmag;
+    anis_en += anisotropy_[i]*zmag*zmag;
   }
 
   real exch_en = 0;

@@ -15,6 +15,7 @@ cmake_install.cmake
 magsim/magsim
 magsim/magsim_CoRuCo
 magsim/magsim_manual
+magsim/magsim_bulkCo
 scratch
 
 FePt/

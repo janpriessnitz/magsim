@@ -1,5 +1,5 @@
-#ifndef CORUCOGENERATOR_H
-#define CORUCOGENERATOR_H
+#ifndef BULKCOGENERATOR_H
+#define BULKCOGENERATOR_H
 
 #include <vector>
 #include <unordered_map>
@@ -12,9 +12,9 @@
 #include "MapReader.h"
 
 
-class CoRuCoGenerator : LatticeGenerator {
+class BulkCoGenerator : LatticeGenerator {
 public:
-  CoRuCoGenerator(const MapReader & config);
+  BulkCoGenerator(const MapReader & config);
 
   SpinLattice Generate() const;
 

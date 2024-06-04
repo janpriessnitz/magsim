@@ -24,6 +24,7 @@ public:
 
   virtual void DoStep() = 0;
 
+  real temperature_;
   SpinLattice* lattice_;
   std::vector<std::mt19937> rng_engs_;
 };

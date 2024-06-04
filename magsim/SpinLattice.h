@@ -34,7 +34,7 @@ public:
 
   std::vector<vec3d> spins_;
   std::vector<vec3d> avg_spins_;
-  size_t n_avgs_;
+  size_t n_avgs_ = 0;
 
   std::vector<real> anisotropy_;
   std::vector<std::vector<std::tuple<size_t, real>>> exchange_;

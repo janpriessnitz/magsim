@@ -1,5 +1,5 @@
 
-#include "CoRuCoGenerator.h"
+#include "BulkCoGenerator.h"
 
 #include "ConfigReader.h"
 #include "Constants.h"
@@ -8,7 +8,7 @@
 #include <cmath>
 
 
-CoRuCoGenerator::CoRuCoGenerator(const MapReader & config) {
+BulkCoGenerator::BulkCoGenerator(const MapReader & config) {
   nx_ = config.GetInt("nx");
   ny_ = config.GetInt("ny");
   nz_ = config.GetInt("nz");
@@ -20,11 +20,9 @@ CoRuCoGenerator::CoRuCoGenerator(const MapReader & config) {
   periodic_x_ = config.GetInt("periodic_x");
   periodic_y_ = config.GetInt("periodic_y");
   periodic_z_ = config.GetInt("periodic_z");
-  interface_exchange_energy_ = config.GetDouble("interface_J")*constants::Ry;
-  spin_direction_ = config.GetChar("spin_direction");
 }
 
-SpinLattice CoRuCoGenerator::Generate() const {
+SpinLattice BulkCoGenerator::Generate() const {
   printf("generating positions\n");
   auto positions = GeneratePositions();
 
@@ -33,7 +31,6 @@ SpinLattice CoRuCoGenerator::Generate() const {
   SpinLattice res;
   res.positions_ = positions;
   res.anisotropy_.resize(res.positions_.size());
-  // res.anisotropy_ = Co_anis_;
   std::fill(res.anisotropy_.begin(), res.anisotropy_.end(), Co_anis_);
 
   printf("loading symmetries\n");
@@ -52,22 +49,16 @@ SpinLattice CoRuCoGenerator::Generate() const {
 }
 
 
-std::vector<vec3d> CoRuCoGenerator::GeneratePositions() const {
+std::vector<vec3d> BulkCoGenerator::GeneratePositions() const {
   std::vector<vec3d> positions;
   double center_z = std::get<2>(area_dims_)/2;
-  double middle_space = 10;
   for (int curz = 0; curz < nz_; ++curz) {
     for (int cury = 0; cury < ny_; ++cury) {
       for (int curx = 0; curx < nx_; ++curx) {
         vec3d unit_cell_pos = curx*base1_ + cury*base2_ + curz*base3_;
         for (const vec3d & spin_pos : spin_pos_list) {
           vec3d pos = unit_cell_pos + spin_pos;
-          // make a hole on the interface
-          if (abs(center_z - std::get<2>(pos)) < middle_space/2) {
-              continue;
-          }
           positions.emplace_back(pos);
-
         }
       }
     }
@@ -75,7 +66,7 @@ std::vector<vec3d> CoRuCoGenerator::GeneratePositions() const {
   return positions;
 }
 
-std::vector<std::vector<std::tuple<size_t, real>>> CoRuCoGenerator::GenerateExchange(
+std::vector<std::vector<std::tuple<size_t, real>>> BulkCoGenerator::GenerateExchange(
   const PointLookup & point_lookup,
   const std::vector<std::tuple<vec3d, real>> & ints,
   const std::vector<mat3d> & syms) const
@@ -84,9 +75,6 @@ std::vector<std::vector<std::tuple<size_t, real>>> CoRuCoGenerator::GenerateExch
 
   std::vector<std::vector<std::tuple<size_t, real>>> exch_list;
   exch_list.resize(point_lookup.points_.size());
-
-  double middle_space = 10;
-  double interface_A_z = nz_*std::get<2>(base3_)/2 - middle_space/2;
 
   #pragma omp parallel for
   for (size_t ind = 0; ind < point_lookup.points_.size(); ++ind) {
@@ -108,50 +96,30 @@ std::vector<std::vector<std::tuple<size_t, real>>> CoRuCoGenerator::GenerateExch
     one_exch.insert(one_exch.end(), one_exch_map.begin(), one_exch_map.end());
     exch_list[ind] = one_exch;
   }
+
   auto stop = std::chrono::high_resolution_clock::now();
   global_timer.AddTime(stop - start, Timer::Section::GenExchange);
-
-  for (size_t ind = 0; ind < point_lookup.points_.size(); ++ind) {
-    vec3d pos = point_lookup.points_[ind];
-    double tol = 1;
-    if (std::get<2>(pos) + tol > interface_A_z && std::get<2>(pos) - tol < interface_A_z) {
-      vec3d partner_pos = pos + 7*base3_;
-      auto [partner_ind, phase] = GetPoint(point_lookup, partner_pos);
-      if (partner_ind) {
-        exch_list[ind].push_back({*partner_ind, interface_exchange_energy_*phase});
-        exch_list[*partner_ind].push_back({ind, interface_exchange_energy_*phase});
-      } else {
-        printf("no partner across interface found!!!\n");
-        exit(0);
-      }
-    }
-  }
 
   return exch_list;
 }
 
 // Half of spins are {0, 0, -1}, half {0, 0, 1}
-// Aim is to create a domain wall perpendicular to x- or z- direction
-std::vector<vec3d> CoRuCoGenerator::GenerateSpins(const std::vector<vec3d> & positions) const {
+// Aim is to create a domain wall perpendicular to z- direction
+std::vector<vec3d> BulkCoGenerator::GenerateSpins(const std::vector<vec3d> & positions) const {
   std::vector<vec3d> spins;
   spins.resize(positions.size());
   for (size_t ind = 0; ind < positions.size(); ++ind) {
     vec3d pos = positions[ind];
-    if (spin_direction_ == 'z') {
-      if (std::get<2>(pos) < std::get<2>(area_dims_)/2) {
-        spins[ind] = {0, 0, -1};
-      } else {
-        spins[ind] = {0, 0, 1};
-      }
-    }
-    else {
+    if (std::get<2>(pos) < std::get<2>(area_dims_)/2) {
+      spins[ind] = {0, 0, -1};
+    } else {
       spins[ind] = {0, 0, 1};
     }
   }
   return spins;
 }
 
-std::pair<std::optional<size_t>, int> CoRuCoGenerator::GetPoint(const PointLookup & lookup, const vec3d & pos) const {
+std::pair<std::optional<size_t>, int> BulkCoGenerator::GetPoint(const PointLookup & lookup, const vec3d & pos) const {
   vec3d base_pos = pos + vec3d{tol/2, tol/2, tol/2};
   base_pos = base_pos*base_mat_inv_;
   auto [bx, by, bz] = base_pos;
@@ -183,7 +151,7 @@ std::pair<std::optional<size_t>, int> CoRuCoGenerator::GetPoint(const PointLooku
   return std::make_pair(partner_ind, phase);
 }
 
-std::vector<vec3d> CoRuCoGenerator::ApplySymmetry(const vec3d & vec, const std::vector<mat3d> & syms) const {
+std::vector<vec3d> BulkCoGenerator::ApplySymmetry(const vec3d & vec, const std::vector<mat3d> & syms) const {
   std::vector<vec3d> res;
   for (const auto & sym : syms) {
     res.push_back(vec*sym);

@@ -14,8 +14,6 @@ public:
   vec3d ProposeSpin(const vec3d & old_spin);
   bool ShouldAccept(const real & energy_diff);
 
-  real temperature_;  // K
-
   std::vector<vec3d> Heffs_;
   // magnitude of random spin added to the old spin when proposing a new spin in Metropolis
   real random_spin_mag_ = kInitialRandomSpinMag;

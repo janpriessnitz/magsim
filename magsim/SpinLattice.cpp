@@ -82,6 +82,10 @@ size_t SpinLattice::NumSpins() const {
 void SpinLattice::DumpLattice(const std::string &fname, bool dump_average) const {
   auto start = std::chrono::high_resolution_clock::now();
   FILE *fp = fopen(fname.c_str(), "w");
+  if (!fp) {
+    fprintf(stderr, "could not open dump file %s\n", fname.c_str());
+    exit(1);
+  }
   for (size_t i = 0; i < spins_.size(); ++i) {
     vec3d spin = dump_average ? avg_spins_[i]/n_avgs_ : spins_[i];
     fprintf(fp, "%s\n", to_string(spin).c_str());

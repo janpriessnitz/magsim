@@ -20,7 +20,6 @@ public:
 
   inline vec3d GetSpinUpdate(vec3d spin, vec3d Heff) const;
 
-  real temperature_;  // K
   real alpha_ = 0.1;  // damping
   real timestep_ = 1e-15;
 

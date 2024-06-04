@@ -15,9 +15,33 @@
 
 
 SpinLattice LoadLattice(const MapReader &config_reader) {
+  
+  std::string species_str = config_reader.GetString("species");
+  std::vector<std::string> species_list;
+  size_t pos = 0;
+  while ((pos = species_str.find(",")) != std::string::npos) {
+      std::string specie = species_str.substr(0, pos);
+      species_list.push_back(specie);
+      species_str.erase(0, pos + 1);
+  }
+  species_list.push_back(species_str);
+
   std::unordered_map<std::string, real> species_anisotropy;
-  species_anisotropy["Fe"] = 2.4e-6*constants::eV;  // TODO: find better source for bcc Fe anisotropy
-  species_anisotropy["Pt"] = 0;
+  std::string anisotropy_str = config_reader.GetString("anisotropy");
+  size_t i = 0;
+  for (; (pos = anisotropy_str.find(",")) != std::string::npos; ++i) {
+      std::string tok = anisotropy_str.substr(0, pos);
+      real anis = strtod(tok.c_str(), nullptr);
+      species_anisotropy[species_list[i]] = anis*constants::eV;
+      anisotropy_str.erase(0, pos + 1);
+  }
+  real anis = strtod(anisotropy_str.c_str(), nullptr);
+  species_anisotropy[species_list[i]] = anis*constants::eV;
+      
+  // // species_anisotropy["Fe"] = -2.4e-6*constants::eV;  // TODO: find better source for bcc Fe anisotropy
+  // species_anisotropy["Fe"] = -2.4e-6*constants::eV;  // TODO: find better source for bcc Fe anisotropy
+  // // species_anisotropy["Fe"] = 0;  // TODO: find better source for bcc Fe anisotropy
+  // species_anisotropy["Pt"] = 0;
 
   SpinLattice res;
   XyzReader xyz_r("pos.xyz");
@@ -40,7 +64,7 @@ SpinLattice LoadLattice(const MapReader &config_reader) {
   for (size_t i = 0; i < ex_r.NumRows(); ++i) {
     long long ia = ex_r.GetInt(i, 0);
     long long ib = ex_r.GetInt(i, 1);
-    double en = ex_r.GetDouble(i, 1);
+    double en = ex_r.GetDouble(i, 2);
     res.exchange_[ia].push_back({ib, en*constants::eV});
   }
 
@@ -49,11 +73,17 @@ SpinLattice LoadLattice(const MapReader &config_reader) {
   res.spins_.resize(res.positions_.size());
   res.avg_spins_.resize(res.positions_.size());
 
+  bool domain_wall = config_reader.GetInt("domain_wall") != 0;
   for (size_t i = 0; i < res.spins_.size(); ++i) {
-    if (std::get<2>(res.positions_[i]) < z_boundary)
-      res.spins_[i] = {0,0,-1};
-    else
+    if (std::get<2>(res.positions_[i]) <= z_boundary) {
+      if (domain_wall) {
+        res.spins_[i] = {0,0,-1};
+      } else {
+        res.spins_[i] = {0,0,1};
+      }
+    } else {
       res.spins_[i] = {0,0,1};
+    }
   }
 
   return res;
@@ -70,7 +100,11 @@ int main(int argc, char **argv) {
     restart_fname = argv[3];
   }
 
-  MapReader reader("config.in");
+  if (!std::filesystem::create_directory(out_dir)) {
+    fprintf(stderr, "failed to create output directory %s\n", out_dir.c_str());
+  }
+
+  MapReader reader(argv[1]);
 
   printf("generating spin lattice\n");
   SpinLattice lat = LoadLattice(reader);
@@ -105,7 +139,7 @@ int main(int argc, char **argv) {
     printf("%s %lf\n", to_string(avgm).c_str(), mag(avgm));
     bool dump_avgs = true;
     sim->lattice_->DumpLattice(out_dir + "/lattice.out" + std::to_string(j), dump_avgs);
-    // sim->lattice_->DumpProfile(out_dir + "/profile.out" + std::to_string(j), reader.GetChar("domain_wall_direction"), dump_avgs);
+    sim->lattice_->DumpProfile(out_dir + "/profile.out" + std::to_string(j), reader.GetChar("domain_wall_direction"), dump_avgs);
     sim->lattice_->ResetAverages();
   }
   auto stop = std::chrono::high_resolution_clock::now();

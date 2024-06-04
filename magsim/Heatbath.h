@@ -9,8 +9,6 @@ public:
 
   virtual void DoStep();
 
-  real temperature_;  // K
-
   std::vector<vec3d> Heffs_;
 
 };

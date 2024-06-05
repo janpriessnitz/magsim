@@ -25,7 +25,8 @@ int main(int argc, char **argv) {
   }
 
   MapReader reader(argv[1]);
-  CoRuCoGenerator gen(reader);
+  Config c(argv[1]);
+  CoRuCoGenerator gen(c);
   printf("generating spin lattice\n");
   SpinLattice lat = gen.Generate();
 

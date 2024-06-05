@@ -3,26 +3,68 @@
 #include "ConfigReader.h"
 #include "Constants.h"
 #include "TupleReader.h"
+#include "Config.h"
 
 #include <cmath>
 
+LatticeGenerator::LatticeGenerator(const Config & config) {
+  nx_ = config.data_["nx"];
+  ny_ = config.data_["ny"];
+  nz_ = config.data_["nz"];
 
-HcpCobaltGenerator::HcpCobaltGenerator(const MapReader & config) {
-  nx_ = config.GetInt("nx");
-  ny_ = config.GetInt("ny");
-  nz_ = config.GetInt("nz");
+  // cell_ = config.data_.["cell"];
+  cell_inv_ = inverse(cell_);
+}
+
+std::pair<std::optional<size_t>, int> LatticeGenerator::GetPoint(const PointLookup & lookup, const vec3d & pos) const {
+  vec3d base_pos = pos + vec3d{tol/2, tol/2, tol/2};
+  base_pos = base_pos*cell_inv_;
+  auto [bx, by, bz] = base_pos;
+  int phase = 1;
+  if (periodic_x_ != 0) {
+    real bx_p = fmod(bx+nx_, nx_);
+    if (abs(bx - bx_p) > tol) {
+      phase *= periodic_x_;
+    }
+    bx = bx_p;
+  }
+  if (periodic_y_ != 0) {
+    real by_p = fmod(by+ny_, ny_);
+    if (abs(by - by_p) > tol) {
+      phase *= periodic_y_;
+    }
+    by = by_p;
+  }
+  if (periodic_z_ != 0) {
+    real bz_p = fmod(bz+nz_, nz_);
+    if (abs(bz - bz_p) > tol) {
+      phase *= periodic_z_;
+    }
+    bz = bz_p;
+  }
+
+  vec3d new_pos = vec3d{bx, by, bz}*cell_;
+  auto partner_ind = lookup.GetExact(new_pos);
+  return std::make_pair(partner_ind, phase);
+}
+
+std::vector<vec3d> LatticeGenerator::ApplySymmetry(const vec3d & vec, const std::vector<mat3d> & syms) const {
+  std::vector<vec3d> res;
+  for (const auto & sym : syms) {
+    res.push_back(vec*sym);
+  }
+  return res;
+}
+
+HcpCobaltGenerator::HcpCobaltGenerator(const Config & config) : LatticeGenerator(config) {
   area_dims_ = nx_*base1_ + ny_*base2_ + nz_*base3_;
-  Co_anis_ = config.GetDouble("anisotropy");
-  symmetry_fname_ = config.GetString("symmetry_file");
-  exchange_fname_ = config.GetString("exchange_file");
+  Co_anis_ = config.data_["anisotropy"];
+  symmetry_fname_ = config.data_["symmetry_file"];
+  exchange_fname_ = config.data_["exchange_file"];
 
-  periodic_x_ = config.GetInt("periodic_x") != 0;
-  periodic_y_ = config.GetInt("periodic_y") != 0;
-  periodic_z_ = config.GetInt("periodic_z") != 0;
-
-  domain_wall_direction_ = config.GetChar("domain_wall_direction");
-  middle_space_ = config.GetDouble("middle_space");
-  middle_offset_ = config.GetDouble("middle_offset");
+  domain_wall_direction_ = ((std::string)config.data_["domain_wall_direction"])[0];
+  middle_space_ = config.data_["middle_space"];
+  middle_offset_ = config.data_["middle_offset"];
 }
 
 SpinLattice HcpCobaltGenerator::Generate() const {
@@ -103,7 +145,7 @@ std::vector<std::vector<std::tuple<size_t, real>>> HcpCobaltGenerator::GenerateE
       auto sym_vecs = ApplySymmetry(int_vec, syms);
       for (const auto & sym_vec : sym_vecs) {
         vec3d partner_pos = pos + sym_vec;
-        auto partner_ind = GetPoint(point_lookup, partner_pos);
+        auto [partner_ind, phase] = GetPoint(point_lookup, partner_pos);
         if (partner_ind) {
           one_exch_map[*partner_ind] = int_energy;
         }
@@ -148,34 +190,6 @@ std::vector<vec3d> HcpCobaltGenerator::GenerateSpins(const std::vector<vec3d> & 
   }
   return spins;
 }
-
-std::optional<size_t> HcpCobaltGenerator::GetPoint(const PointLookup & lookup, const vec3d & pos) const {
-  vec3d base_pos = pos + vec3d{tol/2, tol/2, tol/2};
-  base_pos = base_pos*base_mat_inv_;
-  auto [bx, by, bz] = base_pos;
-  if (periodic_x_) {
-    bx = fmod(bx+nx_, nx_);
-  }
-  if (periodic_y_) {
-    by = fmod(by+ny_, ny_);
-  }
-  if (periodic_z_) {
-    bz = fmod(bz+nz_, nz_);
-  }
-
-  vec3d new_pos = vec3d{bx, by, bz}*base_mat_;
-  auto partner_ind = lookup.GetExact(new_pos);
-  return partner_ind;
-}
-
-std::vector<vec3d> HcpCobaltGenerator::ApplySymmetry(const vec3d & vec, const std::vector<mat3d> & syms) const {
-  std::vector<vec3d> res;
-  for (const auto & sym : syms) {
-    res.push_back(vec*sym);
-  }
-  return res;
-}
-
 
 PointLookup::PointLookup(std::vector<vec3d> point_list)
   : points_(point_list)

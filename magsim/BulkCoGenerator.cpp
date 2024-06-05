@@ -8,18 +8,12 @@
 #include <cmath>
 
 
-BulkCoGenerator::BulkCoGenerator(const MapReader & config) {
-  nx_ = config.GetInt("nx");
-  ny_ = config.GetInt("ny");
-  nz_ = config.GetInt("nz");
+BulkCoGenerator::BulkCoGenerator(const Config & config) : LatticeGenerator(config) {
   area_dims_ = nx_*base1_ + ny_*base2_ + nz_*base3_;
-  Co_anis_ = config.GetDouble("anisotropy");
-  symmetry_fname_ = config.GetString("symmetry_file");
-  exchange_fname_ = config.GetString("exchange_file");
+  Co_anis_ = config.data_["anisotropy"];
 
-  periodic_x_ = config.GetInt("periodic_x");
-  periodic_y_ = config.GetInt("periodic_y");
-  periodic_z_ = config.GetInt("periodic_z");
+  syms_ = config.GetSymmetries();
+  exchange_ints_ = config.GetExchange();
 }
 
 SpinLattice BulkCoGenerator::Generate() const {
@@ -33,13 +27,8 @@ SpinLattice BulkCoGenerator::Generate() const {
   res.anisotropy_.resize(res.positions_.size());
   std::fill(res.anisotropy_.begin(), res.anisotropy_.end(), Co_anis_);
 
-  printf("loading symmetries\n");
-  auto syms = ConfigReader::ReadSymmetries(symmetry_fname_);
-  printf("loading exchange\n");
-  auto exchange_ints = ConfigReader::ReadExchange(exchange_fname_);
-
   printf("generating exchange\n");
-  res.exchange_ = GenerateExchange(point_lookup, exchange_ints, syms);
+  res.exchange_ = GenerateExchange(point_lookup, exchange_ints_, syms_);
 
   printf("generating spins\n");
   res.spins_ = GenerateSpins(positions);
@@ -117,44 +106,4 @@ std::vector<vec3d> BulkCoGenerator::GenerateSpins(const std::vector<vec3d> & pos
     }
   }
   return spins;
-}
-
-std::pair<std::optional<size_t>, int> BulkCoGenerator::GetPoint(const PointLookup & lookup, const vec3d & pos) const {
-  vec3d base_pos = pos + vec3d{tol/2, tol/2, tol/2};
-  base_pos = base_pos*base_mat_inv_;
-  auto [bx, by, bz] = base_pos;
-  int phase = 1;
-  if (periodic_x_ != 0) {
-    real bx_p = fmod(bx+nx_, nx_);
-    if (abs(bx - bx_p) > tol) {
-      phase *= periodic_x_;
-    }
-    bx = bx_p;
-  }
-  if (periodic_y_ != 0) {
-    real by_p = fmod(by+ny_, ny_);
-    if (abs(by - by_p) > tol) {
-      phase *= periodic_y_;
-    }
-    by = by_p;
-  }
-  if (periodic_z_ != 0) {
-    real bz_p = fmod(bz+nz_, nz_);
-    if (abs(bz - bz_p) > tol) {
-      phase *= periodic_z_;
-    }
-    bz = bz_p;
-  }
-
-  vec3d new_pos = vec3d{bx, by, bz}*base_mat_;
-  auto partner_ind = lookup.GetExact(new_pos);
-  return std::make_pair(partner_ind, phase);
-}
-
-std::vector<vec3d> BulkCoGenerator::ApplySymmetry(const vec3d & vec, const std::vector<mat3d> & syms) const {
-  std::vector<vec3d> res;
-  for (const auto & sym : syms) {
-    res.push_back(vec*sym);
-  }
-  return res;
 }

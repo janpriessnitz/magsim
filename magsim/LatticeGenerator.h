@@ -8,6 +8,7 @@
 #include "SpinLattice.h"
 #include "Util.h"
 #include "MapReader.h"
+#include "Config.h"
 
 static constexpr real tol = 0.1;
 
@@ -34,15 +35,28 @@ public:
 
 class LatticeGenerator {
 public:
-  LatticeGenerator() {
+  LatticeGenerator(const Config & config);
 
-  };
   virtual SpinLattice Generate() const = 0;
+
+  std::pair<std::optional<size_t>, int> GetPoint(const PointLookup & lookup, const vec3d & pos) const;
+  std::vector<vec3d> ApplySymmetry(const vec3d & vec, const std::vector<mat3d> & syms) const;
+
+protected:
+  int nx_, ny_, nz_;
+  int periodic_x_, periodic_y_, periodic_z_;
+  mat3d cell_;
+  mat3d cell_inv_;
+  // std::vector<vec3d> spin_pos_list = {
+  //   {0, 0, 0},
+  //   (1/3.0)*(base1_ + base2_) + (1/2.0)*base3_
+  // };
+
 };
 
 class HcpCobaltGenerator : LatticeGenerator {
 public:
-  explicit HcpCobaltGenerator(const MapReader & config);
+  explicit HcpCobaltGenerator(const Config & config);
 
   SpinLattice Generate() const;
 
@@ -52,10 +66,6 @@ public:
     const std::vector<std::tuple<vec3d, real>> & ints,
     const std::vector<mat3d> & syms) const;
   std::vector<vec3d> GenerateSpins(const std::vector<vec3d> & positions) const;
-
-  std::optional<size_t> GetPoint(const PointLookup & lookup, const vec3d & pos) const;
-
-  std::vector<vec3d> ApplySymmetry(const vec3d & vec, const std::vector<mat3d> & syms) const;
 
   int nx_, ny_, nz_;
   vec3d base1_ = {1, 0, 0};

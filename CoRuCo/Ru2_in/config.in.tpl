@@ -14,5 +14,6 @@ periodic_y 1
 periodic_z 0
 dump_exchange 1
 domain_wall_direction z
-interface_J -0.00146
+interface_J -0.0007301
 spin_direction 0
+mode H

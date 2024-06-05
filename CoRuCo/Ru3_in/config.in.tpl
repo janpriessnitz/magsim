@@ -5,7 +5,7 @@ anisotropy -5.83e-24
 symmetry_file sym.mat
 exchange_file exchange_turek.in
 num_step 200
-num_substep 5000
+num_substep 1000
 timestep 2e-16
 damping 0.1
 temperature $TEMP
@@ -14,5 +14,6 @@ periodic_y 1
 periodic_z 0
 dump_exchange 1
 domain_wall_direction z
-interface_J 0.0006
+interface_J 0.0003011
 spin_direction z
+mode H

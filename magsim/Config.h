@@ -2,26 +2,26 @@
 #define CONFIG_H
 
 #include <cstdint>
-#include <vector>
 #include <tuple>
+#include <vector>
 
 #include "Util.h"
+
+#include "json.hpp"
+using json = nlohmann::json;
 
 typedef std::tuple<real, uint64_t, uint64_t> annealing_step_t;
 typedef std::vector<annealing_step_t> annealing_sched_t;
 
 class Config {
 public:
-  char method = 'H';   // 'H' for heatbath, 'M' for metropolis
-  uint64_t lattice_w = 48;
-  uint64_t lattice_h = 48;
+  Config(const std::string &config_fname);
 
-  real J = 1;
-  real D = 1.4;
-  vec3d B = {0, 0, 0.5};
-  annealing_sched_t annealing_sched;  // temperature, number of steps, reporting period
-  real deltaSpin = 0.1;
-  std::string lattice_dump_file;
+  annealing_sched_t Config::GetAnnealingSched() const;
+  std::vector<mat3d> Config::GetSymmetries() const;
+  std::vector<std::tuple<vec3d, real>> Config::GetExchange() const;
+
+  json data_;
 };
 
 #endif // UTIL_H

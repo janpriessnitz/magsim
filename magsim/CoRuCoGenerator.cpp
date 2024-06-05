@@ -8,20 +8,14 @@
 #include <cmath>
 
 
-CoRuCoGenerator::CoRuCoGenerator(const MapReader & config) {
-  nx_ = config.GetInt("nx");
-  ny_ = config.GetInt("ny");
-  nz_ = config.GetInt("nz");
+CoRuCoGenerator::CoRuCoGenerator(const Config & config) : LatticeGenerator(config) {
   area_dims_ = nx_*base1_ + ny_*base2_ + nz_*base3_;
-  Co_anis_ = config.GetDouble("anisotropy");
-  symmetry_fname_ = config.GetString("symmetry_file");
-  exchange_fname_ = config.GetString("exchange_file");
+  Co_anis_ = config.data_["anisotropy"];
+  symmetry_fname_ = config.data_["symmetry_file"];
+  exchange_fname_ = config.data_["exchange_file"];
 
-  periodic_x_ = config.GetInt("periodic_x");
-  periodic_y_ = config.GetInt("periodic_y");
-  periodic_z_ = config.GetInt("periodic_z");
-  interface_exchange_energy_ = config.GetDouble("interface_J")*constants::Ry;
-  spin_direction_ = config.GetChar("spin_direction");
+  interface_exchange_energy_ = (config.data_["interface_J"].get<real>())*constants::Ry;
+  spin_direction_ = (config.data_["spin_direction"].get<std::string>())[0];
 }
 
 SpinLattice CoRuCoGenerator::Generate() const {

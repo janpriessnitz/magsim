@@ -1,4 +1,5 @@
 
+#include "Config.h"
 #include "ConfigReader.h"
 #include "SimulationFactory.h"
 #include "SpinDynamics.h"
@@ -25,7 +26,8 @@ int main(int argc, char **argv) {
   }
 
   MapReader reader(argv[1]);
-  BulkCoGenerator gen(reader);
+  Config c(argv[1]);
+  BulkCoGenerator gen(c);
   printf("generating spin lattice\n");
   SpinLattice lat = gen.Generate();
 
@@ -35,7 +37,7 @@ int main(int argc, char **argv) {
   lat.DumpPositions(out_dir + "/positions.out");
   lat.DumpXYZ(out_dir + "/positions.xyz");
 
-  if (reader.GetInt("dump_exchange")) {
+  if (c.data_["dump_exchange"].get<int>()) {
     lat.DumpExchange(out_dir + "/exchange.out");
   }
 

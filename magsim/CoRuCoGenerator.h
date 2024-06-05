@@ -10,11 +10,11 @@
 #include "SpinLattice.h"
 #include "Util.h"
 #include "MapReader.h"
-
+#include "Config.h"
 
 class CoRuCoGenerator : LatticeGenerator {
 public:
-  CoRuCoGenerator(const MapReader & config);
+  CoRuCoGenerator(const Config & config);
 
   SpinLattice Generate() const;
 

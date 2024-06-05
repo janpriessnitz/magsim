@@ -1,4 +1,5 @@
 
+#include "Config.h"
 #include "ConfigReader.h"
 #include "SimulationFactory.h"
 #include "SpinDynamics.h"
@@ -13,9 +14,10 @@
 #include <filesystem>
 #include <unordered_map>
 
+#include <iostream>
 
 SpinLattice LoadLattice(const MapReader &config_reader) {
-  
+
   std::string species_str = config_reader.GetString("species");
   std::vector<std::string> species_list;
   size_t pos = 0;
@@ -37,7 +39,7 @@ SpinLattice LoadLattice(const MapReader &config_reader) {
   }
   real anis = strtod(anisotropy_str.c_str(), nullptr);
   species_anisotropy[species_list[i]] = anis*constants::eV;
-      
+
   // // species_anisotropy["Fe"] = -2.4e-6*constants::eV;  // TODO: find better source for bcc Fe anisotropy
   // species_anisotropy["Fe"] = -2.4e-6*constants::eV;  // TODO: find better source for bcc Fe anisotropy
   // // species_anisotropy["Fe"] = 0;  // TODO: find better source for bcc Fe anisotropy
@@ -91,6 +93,18 @@ SpinLattice LoadLattice(const MapReader &config_reader) {
 
 
 int main(int argc, char **argv) {
+
+  Config c("config.json");
+  std::string a = c.data_.dump();
+  printf("%s\n", a.c_str());
+
+  for (const int &num : c.data_["arr"]) {
+    printf("%d\n", num);
+  }
+
+  std::string efn = c.data_["exchange_fname"];
+  printf("%s\n", efn.c_str());
+
   std::string out_dir = "output/";
   if (argc > 2) {
     out_dir = argv[2];

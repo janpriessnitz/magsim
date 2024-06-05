@@ -8,7 +8,7 @@ import os
 import sys
 
 def tanh_model(xs, x0, delta, me):
-    # return np.abs(me*np.tanh(np.pi*(xs-x0)/delta))
+    return np.abs(me*np.tanh(np.pi*(xs-x0)/delta))
     return me*np.tanh(np.pi*(xs-x0)/delta)
 
 def fit_domain_wall(xs, magzs):

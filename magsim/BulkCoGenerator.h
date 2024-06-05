@@ -9,12 +9,12 @@
 #include "LatticeGenerator.h"
 #include "SpinLattice.h"
 #include "Util.h"
-#include "MapReader.h"
+#include "Config.h"
 
 
 class BulkCoGenerator : LatticeGenerator {
 public:
-  BulkCoGenerator(const MapReader & config);
+  BulkCoGenerator(const Config & config);
 
   SpinLattice Generate() const;
 
@@ -29,26 +29,19 @@ public:
 
   std::vector<vec3d> ApplySymmetry(const vec3d & vec, const std::vector<mat3d> & syms) const;
 
-  int nx_, ny_, nz_;
   vec3d base1_ = {1, 0, 0};
   vec3d base2_ = {0.5, 0.8660254037844386, 0};
   vec3d base3_ = {0, 0, 1.632993161855452};
-  mat3d base_mat_ = {base1_, base2_, base3_};
   std::vector<vec3d> spin_pos_list = {
     {0, 0, 0},
     (1/3.0)*(base1_ + base2_) + (1/2.0)*base3_
   };
+
   vec3d area_dims_;
-
-  mat3d base_mat_inv_ = inverse(base_mat_);
-
   real Co_anis_;  // J
-  std::string exchange_fname_;
-  std::string symmetry_fname_;
 
-  int periodic_x_;
-  int periodic_y_;
-  int periodic_z_;
+  std::vector<mat3d> syms_;
+  std::vector<std::tuple<vec3d, real>> exchange_ints_;
 
   double interface_exchange_energy_ = 0.3/4/constants::J_eV;
 

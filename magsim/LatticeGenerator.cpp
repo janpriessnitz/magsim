@@ -11,6 +11,10 @@ LatticeGenerator::LatticeGenerator(const Config & config) {
   ny_ = config.Get("ny");
   nz_ = config.Get("nz");
 
+  periodic_x_ = config.Get("periodic_x");
+  periodic_y_ = config.Get("periodic_y");
+  periodic_z_ = config.Get("periodic_z");
+
   cell_ = config.Get("cell");
   cell_inv_ = inverse(cell_);
 }

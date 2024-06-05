@@ -1,0 +1,27 @@
+{
+	"nx": 10,
+	"ny": 10,
+	"nz": 100,
+	"num_step": 20,
+	"num_substep": 1000,
+	"temperature": 1,
+	"periodic_x": 1,
+	"periodic_y": 1,
+	"periodic_z": -1,
+	"dump_exchange": 1,
+	"domain_wall_direction": "z",
+	"interface_J": -0.001376,
+	"spin_direction": "z",
+	"mode": "S",
+	"timestep": 1e-16,
+	"damping": 0.05,
+	"cell": [
+		[1, 0, 0],
+		[0, 1, 0],
+		[0, 0, 1]
+	],
+	"exchange": 1,
+	"exchange_interface": 1e-1,
+	"anisotropy": -1e-4,
+	"positions": [[0, 0, 0]]
+}

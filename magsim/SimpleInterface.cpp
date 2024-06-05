@@ -15,9 +15,10 @@ class SimpleInterfaceGenerator : public LatticeGenerator {
 public:
   SimpleInterfaceGenerator(const Config & config) : LatticeGenerator(config) {
     pos_list_ = config.Get("positions");
-    anis_ = config.Get("anisotropy");
-    J_ = config.Get("exchange");
-    J_interface_ = config.Get("exchange_interface");
+    anis_ = config.Get("anisotropy").get<real>()*constants::Ry;
+    J_ = config.Get("exchange").get<real>()*constants::Ry;
+    J_interface_ = config.Get("exchange_interface").get<real>()*constants::Ry;
+    spin_direction_ = config.Get("spin_direction").get<std::string>()[0];
   }
 
   std::tuple<std::vector<vec3d>, std::vector<vec3d>> GeneratePositions() const {
@@ -30,7 +31,7 @@ public:
           for (const vec3d & spin_pos : pos_list_) {
             vec3d pos = unit_cell_pos + spin_pos;
             vec3d spin;
-            if (curz <= nz_/2) {
+            if (curz <= nz_/2 && spin_direction_ == 'z') {
               spin = {0, 0, -1};
             } else {
               spin = {0, 0, 1};
@@ -61,19 +62,26 @@ public:
     std::vector<std::vector<std::tuple<size_t, real>>> exch_list;
     exch_list.resize(point_lookup.points_.size());
 
-    #pragma omp parallel for
+    // #pragma omp parallel for
     for (size_t ind = 0; ind < point_lookup.points_.size(); ++ind) {
-      // std::vector<std::tuple<size_t, real>> one_exch;
+      
       std::map<size_t, real> one_exch_map;
       vec3d pos = point_lookup.points_[ind];
-      for (const auto & [int_vec, int_energy] : ints) {
-        auto sym_vecs = ApplySymmetry(int_vec, syms);
-        for (const auto & sym_vec : sym_vecs) {
-          vec3d partner_pos = pos + sym_vec;
-          auto [partner_ind, phase] = GetPoint(point_lookup, partner_pos);
-          if (partner_ind) {
-            one_exch_map[*partner_ind] = int_energy*phase;
-          }
+
+      for (const auto & int_vec : int_vecs) {
+        vec3d partner_pos = pos + int_vec;
+        real int_energy;
+        if (std::get<2>(pos) <= nz_/2 && std::get<2>(partner_pos) > nz_/2) {
+          int_energy = J_interface_;
+        } else {
+          int_energy = J_;
+        }
+        
+        // printf("%s, %s\n", to_string(pos).c_str(), to_string(partner_pos).c_str());
+        auto [partner_ind, phase] = GetPoint(point_lookup, partner_pos);
+        if (partner_ind) {
+          // printf("yes %lu %lu\n", ind, *partner_ind);
+          one_exch_map[*partner_ind] = int_energy*phase;
         }
       }
 
@@ -98,7 +106,7 @@ public:
     std::fill(res.anisotropy_.begin(), res.anisotropy_.end(), anis_);
 
     PointLookup point_lookup(res.positions_);
-    // res.exchange_ = GenerateExchange(point_lookup, exchange_ints_, syms_);
+    res.exchange_ = GenerateExchange(point_lookup);
 
     res.avg_spins_ = res.spins_;
     res.n_avgs_ = 1;
@@ -110,6 +118,7 @@ public:
   real anis_;
   real J_;
   real J_interface_;
+  char spin_direction_;
 };
 
 int main(int argc, char **argv) {

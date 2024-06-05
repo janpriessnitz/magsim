@@ -11,6 +11,59 @@
 #include <chrono>
 #include <filesystem>
 
+class SimpleInterfaceGenerator : public LatticeGenerator {
+public:
+  SimpleInterfaceGenerator(const Config & config) : LatticeGenerator(config) {
+    pos_list_ = config.Get("positions");
+    anis_ = config.Get("anisotropy");
+  }
+
+  std::tuple<std::vector<vec3d>, std::vector<vec3d>> GeneratePositions() const {
+    std::vector<vec3d> positions;
+    std::vector<vec3d> spins;
+    for (int curz = 0; curz < nz_; ++curz) {
+      for (int cury = 0; cury < ny_; ++cury) {
+        for (int curx = 0; curx < nx_; ++curx) {
+          vec3d unit_cell_pos = curx*std::get<0>(cell_) + cury*std::get<1>(cell_) + curz*std::get<2>(cell_);
+          for (const vec3d & spin_pos : pos_list_) {
+            vec3d pos = unit_cell_pos + spin_pos;
+            vec3d spin;
+            if (curz <= nz_/2) {
+              spin = {0, 0, -1};
+            } else {
+              spin = {0, 0, 1};
+            }
+            positions.emplace_back(pos);
+            spins.emplace_back(spin);
+          }
+        }
+      }
+    }
+    return {positions, spins};
+  }
+
+  SpinLattice Generate() const {
+    SpinLattice res;
+
+    auto [positions, spins] = GeneratePositions();
+    res.positions_ = positions;
+    res.spins_ = spins;
+    res.anisotropy_.resize(res.positions_.size());
+    std::fill(res.anisotropy_.begin(), res.anisotropy_.end(), anis_);
+
+    PointLookup point_lookup(res.positions_);
+    // res.exchange_ = GenerateExchange(point_lookup, exchange_ints_, syms_);
+    
+    res.avg_spins_ = res.spins_;
+    res.n_avgs_ = 1;
+
+    return res;
+  }
+
+  std::vector<vec3d> pos_list_;
+  real anis_;
+};
+
 int main(int argc, char **argv) {
   std::string out_dir = "output/";
   if (argc > 2) {
@@ -25,7 +78,7 @@ int main(int argc, char **argv) {
   }
 
   Config c(argv[1]);
-  BulkCoGenerator gen(c);
+  SimpleInterfaceGenerator gen(c);
   printf("generating spin lattice\n");
   SpinLattice lat = gen.Generate();
 

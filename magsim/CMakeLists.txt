@@ -1,7 +1,6 @@
 set ( MAGSIM_SOURCES
     BulkCoGenerator.cpp
     Config.cpp
-    ConfigReader.cpp
     CoRuCoGenerator.cpp
     Heatbath.cpp
     LatticeGenerator.cpp
@@ -43,5 +42,11 @@ target_compile_options(magsim_bulkCo PRIVATE "-O2")
 target_compile_options(magsim_bulkCo PRIVATE "-march=native")
 target_compile_options(magsim_bulkCo PRIVATE "-fopenmp")
 target_compile_features(magsim_bulkCo PRIVATE cxx_std_17)
-
 target_link_libraries(magsim_bulkCo PRIVATE OpenMP::OpenMP_CXX)
+
+add_executable(magsim_simple SimpleInterface.cpp ${MAGSIM_SOURCES})
+target_compile_options(magsim_simple PRIVATE "-O2")
+target_compile_options(magsim_simple PRIVATE "-march=native")
+target_compile_options(magsim_simple PRIVATE "-fopenmp")
+target_compile_features(magsim_simple PRIVATE cxx_std_17)
+target_link_libraries(magsim_simple PRIVATE OpenMP::OpenMP_CXX)

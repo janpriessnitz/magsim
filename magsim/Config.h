@@ -17,9 +17,10 @@ class Config {
 public:
   Config(const std::string &config_fname);
 
-  annealing_sched_t Config::GetAnnealingSched() const;
-  std::vector<mat3d> Config::GetSymmetries() const;
-  std::vector<std::tuple<vec3d, real>> Config::GetExchange() const;
+  json Get(const std::string & key) const;
+  annealing_sched_t GetAnnealingSched() const;
+  std::vector<mat3d> GetSymmetries() const;
+  std::vector<std::tuple<vec3d, real>> GetExchange() const;
 
   json data_;
 };

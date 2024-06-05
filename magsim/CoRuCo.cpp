@@ -1,5 +1,4 @@
 
-#include "ConfigReader.h"
 #include "SimulationFactory.h"
 #include "SpinDynamics.h"
 #include "Metropolis.h"
@@ -24,19 +23,18 @@ int main(int argc, char **argv) {
     fprintf(stderr, "failed to create output directory %s\n", out_dir.c_str());
   }
 
-  MapReader reader(argv[1]);
   Config c(argv[1]);
   CoRuCoGenerator gen(c);
   printf("generating spin lattice\n");
   SpinLattice lat = gen.Generate();
 
-  auto sim = ConstructSimulation(reader, &lat);
+  auto sim = ConstructSimulation(c, &lat);
 
   printf("dumping positions xyz\n");
   lat.DumpPositions(out_dir + "/positions.out");
   lat.DumpXYZ(out_dir + "/positions.xyz");
 
-  if (reader.GetInt("dump_exchange")) {
+  if (c.Get("dump_exchange").get<int>()) {
     lat.DumpExchange(out_dir + "/exchange.out");
   }
 
@@ -47,8 +45,8 @@ int main(int argc, char **argv) {
 
   printf("starting sim\n");
 
-  int64_t num_step = reader.GetInt("num_step");
-  int64_t num_substep = reader.GetInt("num_substep");
+  int64_t num_step = c.Get("num_step");
+  int64_t num_substep = c.Get("num_substep");
 
   auto start = std::chrono::high_resolution_clock::now();
   for (int j = 0; j < num_step; ++j) {
@@ -60,7 +58,7 @@ int main(int argc, char **argv) {
     printf("%s %lf\n", to_string(avgm).c_str(), mag(avgm));
     bool dump_avgs = true;
     sim->lattice_->DumpLattice(out_dir + "/lattice.out" + std::to_string(j), dump_avgs);
-    sim->lattice_->DumpProfile(out_dir + "/profile.out" + std::to_string(j), reader.GetChar("domain_wall_direction"), dump_avgs);
+    sim->lattice_->DumpProfile(out_dir + "/profile.out" + std::to_string(j), c.Get("domain_wall_direction").get<std::string>()[0], dump_avgs);
     sim->lattice_->ResetAverages();
   }
   auto stop = std::chrono::high_resolution_clock::now();

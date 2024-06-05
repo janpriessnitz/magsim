@@ -1,7 +1,6 @@
 
 #include "CoRuCoGenerator.h"
 
-#include "ConfigReader.h"
 #include "Constants.h"
 #include "TupleReader.h"
 
@@ -10,19 +9,23 @@
 
 CoRuCoGenerator::CoRuCoGenerator(const Config & config) : LatticeGenerator(config) {
   area_dims_ = nx_*base1_ + ny_*base2_ + nz_*base3_;
-  Co_anis_ = config.data_["anisotropy"];
-  symmetry_fname_ = config.data_["symmetry_file"];
-  exchange_fname_ = config.data_["exchange_file"];
+  Co_anis_ = config.Get("anisotropy");
 
-  interface_exchange_energy_ = (config.data_["interface_J"].get<real>())*constants::Ry;
-  spin_direction_ = (config.data_["spin_direction"].get<std::string>())[0];
+  syms_ = config.GetSymmetries();
+  exchange_ints_ = config.GetExchange();
+
+  interface_exchange_energy_ = (config.Get("interface_J").get<real>())*constants::Ry;
+  spin_direction_ = (config.Get("spin_direction").get<std::string>())[0];
 }
 
 SpinLattice CoRuCoGenerator::Generate() const {
   printf("generating positions\n");
   auto positions = GeneratePositions();
+  printf("aftergenerating positions %lu\n", positions.size());
 
   PointLookup point_lookup(positions);
+
+  printf("after point lookup\n");
 
   SpinLattice res;
   res.positions_ = positions;
@@ -30,13 +33,8 @@ SpinLattice CoRuCoGenerator::Generate() const {
   // res.anisotropy_ = Co_anis_;
   std::fill(res.anisotropy_.begin(), res.anisotropy_.end(), Co_anis_);
 
-  printf("loading symmetries\n");
-  auto syms = ConfigReader::ReadSymmetries(symmetry_fname_);
-  printf("loading exchange\n");
-  auto exchange_ints = ConfigReader::ReadExchange(exchange_fname_);
-
   printf("generating exchange\n");
-  res.exchange_ = GenerateExchange(point_lookup, exchange_ints, syms);
+  res.exchange_ = GenerateExchange(point_lookup, exchange_ints_, syms_);
 
   printf("generating spins\n");
   res.spins_ = GenerateSpins(positions);
@@ -143,44 +141,4 @@ std::vector<vec3d> CoRuCoGenerator::GenerateSpins(const std::vector<vec3d> & pos
     }
   }
   return spins;
-}
-
-std::pair<std::optional<size_t>, int> CoRuCoGenerator::GetPoint(const PointLookup & lookup, const vec3d & pos) const {
-  vec3d base_pos = pos + vec3d{tol/2, tol/2, tol/2};
-  base_pos = base_pos*base_mat_inv_;
-  auto [bx, by, bz] = base_pos;
-  int phase = 1;
-  if (periodic_x_ != 0) {
-    real bx_p = fmod(bx+nx_, nx_);
-    if (abs(bx - bx_p) > tol) {
-      phase *= periodic_x_;
-    }
-    bx = bx_p;
-  }
-  if (periodic_y_ != 0) {
-    real by_p = fmod(by+ny_, ny_);
-    if (abs(by - by_p) > tol) {
-      phase *= periodic_y_;
-    }
-    by = by_p;
-  }
-  if (periodic_z_ != 0) {
-    real bz_p = fmod(bz+nz_, nz_);
-    if (abs(bz - bz_p) > tol) {
-      phase *= periodic_z_;
-    }
-    bz = bz_p;
-  }
-
-  vec3d new_pos = vec3d{bx, by, bz}*base_mat_;
-  auto partner_ind = lookup.GetExact(new_pos);
-  return std::make_pair(partner_ind, phase);
-}
-
-std::vector<vec3d> CoRuCoGenerator::ApplySymmetry(const vec3d & vec, const std::vector<mat3d> & syms) const {
-  std::vector<vec3d> res;
-  for (const auto & sym : syms) {
-    res.push_back(vec*sym);
-  }
-  return res;
 }

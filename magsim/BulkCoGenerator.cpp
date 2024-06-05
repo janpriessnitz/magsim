@@ -1,7 +1,6 @@
 
 #include "BulkCoGenerator.h"
 
-#include "ConfigReader.h"
 #include "Constants.h"
 #include "TupleReader.h"
 

@@ -1,6 +1,5 @@
 #include "LatticeGenerator.h"
 
-#include "ConfigReader.h"
 #include "Constants.h"
 #include "TupleReader.h"
 #include "Config.h"
@@ -8,11 +7,11 @@
 #include <cmath>
 
 LatticeGenerator::LatticeGenerator(const Config & config) {
-  nx_ = config.data_["nx"];
-  ny_ = config.data_["ny"];
-  nz_ = config.data_["nz"];
+  nx_ = config.Get("nx");
+  ny_ = config.Get("ny");
+  nz_ = config.Get("nz");
 
-  // cell_ = config.data_.["cell"];
+  cell_ = config.Get("cell");
   cell_inv_ = inverse(cell_);
 }
 
@@ -56,140 +55,140 @@ std::vector<vec3d> LatticeGenerator::ApplySymmetry(const vec3d & vec, const std:
   return res;
 }
 
-HcpCobaltGenerator::HcpCobaltGenerator(const Config & config) : LatticeGenerator(config) {
-  area_dims_ = nx_*base1_ + ny_*base2_ + nz_*base3_;
-  Co_anis_ = config.data_["anisotropy"];
-  symmetry_fname_ = config.data_["symmetry_file"];
-  exchange_fname_ = config.data_["exchange_file"];
+// HcpCobaltGenerator::HcpCobaltGenerator(const Config & config) : LatticeGenerator(config) {
+//   area_dims_ = nx_*base1_ + ny_*base2_ + nz_*base3_;
+//   Co_anis_ = config.data_["anisotropy"];
+//   symmetry_fname_ = config.data_["symmetry_file"];
+//   exchange_fname_ = config.data_["exchange_file"];
 
-  domain_wall_direction_ = ((std::string)config.data_["domain_wall_direction"])[0];
-  middle_space_ = config.data_["middle_space"];
-  middle_offset_ = config.data_["middle_offset"];
-}
+//   domain_wall_direction_ = ((std::string)config.data_["domain_wall_direction"])[0];
+//   middle_space_ = config.data_["middle_space"];
+//   middle_offset_ = config.data_["middle_offset"];
+// }
 
-SpinLattice HcpCobaltGenerator::Generate() const {
-  printf("generating positions\n");
-  auto positions = GeneratePositions();
+// SpinLattice HcpCobaltGenerator::Generate() const {
+//   printf("generating positions\n");
+//   auto positions = GeneratePositions();
 
-  PointLookup point_lookup(positions);
+//   PointLookup point_lookup(positions);
 
-  SpinLattice res;
-  res.positions_ = positions;
-  // res.anisotropy_ = Co_anis_;
-  std::fill(res.anisotropy_.begin(), res.anisotropy_.end(), Co_anis_);
+//   SpinLattice res;
+//   res.positions_ = positions;
+//   // res.anisotropy_ = Co_anis_;
+//   std::fill(res.anisotropy_.begin(), res.anisotropy_.end(), Co_anis_);
 
-  printf("loading symmetries\n");
-  auto syms = ConfigReader::ReadSymmetries(symmetry_fname_);
-  printf("loading exchange\n");
-  auto exchange_ints = ConfigReader::ReadExchange(exchange_fname_);
+//   printf("loading symmetries\n");
+//   auto syms = ConfigReader::ReadSymmetries(symmetry_fname_);
+//   printf("loading exchange\n");
+//   auto exchange_ints = ConfigReader::ReadExchange(exchange_fname_);
 
-  printf("generating exchange\n");
-  res.exchange_ = GenerateExchange(point_lookup, exchange_ints, syms);
+//   printf("generating exchange\n");
+//   res.exchange_ = GenerateExchange(point_lookup, exchange_ints, syms);
 
-  printf("generating spins\n");
-  res.spins_ = GenerateSpins(positions);
-  res.avg_spins_ = res.spins_;
-  res.n_avgs_ = 1;
-  return res;
-}
-
-
-
-std::vector<vec3d> HcpCobaltGenerator::GeneratePositions() const {
-  std::vector<vec3d> positions;
-
-  for (int curz = 0; curz < nz_; ++curz) {
-    for (int cury = 0; cury < ny_; ++cury) {
-      for (int curx = 0; curx < nx_; ++curx) {
-        vec3d unit_cell_pos = curx*base1_ + cury*base2_ + curz*base3_;
-        for (const vec3d & spin_pos : spin_pos_list) {
-          vec3d pos = unit_cell_pos + spin_pos;
-          if (domain_wall_direction_ == 'z') {
-            double center_z = std::get<2>(area_dims_)/2 + middle_offset_;
-            if (abs(center_z - std::get<2>(pos)) < middle_space_)
-              continue;
-          } else if (domain_wall_direction_ == 'x') {
-            double center_x = std::get<0>(area_dims_)/2 + middle_offset_;
-            if (abs(center_x - std::get<0>(pos)) < middle_space_)
-              continue;
-          } else {
-            fprintf(stderr, "GeneratePositions: unknown domain wall direction: %c\n", domain_wall_direction_);
-            exit(1);
-          }
-          positions.emplace_back(pos);
-
-        }
-      }
-    }
-  }
-  return positions;
-}
+//   printf("generating spins\n");
+//   res.spins_ = GenerateSpins(positions);
+//   res.avg_spins_ = res.spins_;
+//   res.n_avgs_ = 1;
+//   return res;
+// }
 
 
-std::vector<std::vector<std::tuple<size_t, real>>> HcpCobaltGenerator::GenerateExchange(
-  const PointLookup & point_lookup,
-  const std::vector<std::tuple<vec3d, real>> & ints,
-  const std::vector<mat3d> & syms) const
-{
-  auto start = std::chrono::high_resolution_clock::now();
 
-  std::vector<std::vector<std::tuple<size_t, real>>> exch_list;
-  exch_list.resize(point_lookup.points_.size());
+// std::vector<vec3d> HcpCobaltGenerator::GeneratePositions() const {
+//   std::vector<vec3d> positions;
 
-  #pragma omp parallel for
-  for (size_t ind = 0; ind < point_lookup.points_.size(); ++ind) {
-    // std::vector<std::tuple<size_t, real>> one_exch;
-    std::map<size_t, real> one_exch_map;
-    vec3d pos = point_lookup.points_[ind];
-    for (const auto & [int_vec, int_energy] : ints) {
-      auto sym_vecs = ApplySymmetry(int_vec, syms);
-      for (const auto & sym_vec : sym_vecs) {
-        vec3d partner_pos = pos + sym_vec;
-        auto [partner_ind, phase] = GetPoint(point_lookup, partner_pos);
-        if (partner_ind) {
-          one_exch_map[*partner_ind] = int_energy;
-        }
-      }
-    }
-    std::vector<std::tuple<size_t, real>> one_exch;
-    one_exch.insert(one_exch.end(), one_exch_map.begin(), one_exch_map.end());
-    exch_list[ind] = one_exch;
-  }
-  auto stop = std::chrono::high_resolution_clock::now();
-  global_timer.AddTime(stop - start, Timer::Section::GenExchange);
-  return exch_list;
-}
+//   for (int curz = 0; curz < nz_; ++curz) {
+//     for (int cury = 0; cury < ny_; ++cury) {
+//       for (int curx = 0; curx < nx_; ++curx) {
+//         vec3d unit_cell_pos = curx*base1_ + cury*base2_ + curz*base3_;
+//         for (const vec3d & spin_pos : spin_pos_list) {
+//           vec3d pos = unit_cell_pos + spin_pos;
+//           if (domain_wall_direction_ == 'z') {
+//             double center_z = std::get<2>(area_dims_)/2 + middle_offset_;
+//             if (abs(center_z - std::get<2>(pos)) < middle_space_)
+//               continue;
+//           } else if (domain_wall_direction_ == 'x') {
+//             double center_x = std::get<0>(area_dims_)/2 + middle_offset_;
+//             if (abs(center_x - std::get<0>(pos)) < middle_space_)
+//               continue;
+//           } else {
+//             fprintf(stderr, "GeneratePositions: unknown domain wall direction: %c\n", domain_wall_direction_);
+//             exit(1);
+//           }
+//           positions.emplace_back(pos);
 
-// Half of spins are {0, 0, -1}, half {0, 0, 1}
-// Aim is to create a domain wall perpendicular to x- or z- direction
-std::vector<vec3d> HcpCobaltGenerator::GenerateSpins(const std::vector<vec3d> & positions) const {
-  std::vector<vec3d> spins;
-  spins.resize(positions.size());
-  for (size_t ind = 0; ind < positions.size(); ++ind) {
-    vec3d pos = positions[ind];
-    if (domain_wall_direction_ == 'z') {
-      if (std::get<2>(pos) < std::get<2>(area_dims_)/2) {
-        spins[ind] = {0, 0, -1};
-      } else {
-        spins[ind] = {0, 0, 1};
-      }
-    } else if (domain_wall_direction_ == 'x') {
-      if (std::get<0>(pos) < std::get<0>(area_dims_)/2) {
-        spins[ind] = {0, 0, -1};
-      } else {
-        spins[ind] = {0, 0, 1};
-      }
-    } else if (domain_wall_direction_ == '0') {
-      spins[ind] = {0, 0, 1};
-    } else {
-      fprintf(stderr, "unknown domain wall direction: %c\n", domain_wall_direction_);
-      exit(1);
-    }
+//         }
+//       }
+//     }
+//   }
+//   return positions;
+// }
 
-    // spins[ind] = {0, 0, 1};
-  }
-  return spins;
-}
+
+// std::vector<std::vector<std::tuple<size_t, real>>> HcpCobaltGenerator::GenerateExchange(
+//   const PointLookup & point_lookup,
+//   const std::vector<std::tuple<vec3d, real>> & ints,
+//   const std::vector<mat3d> & syms) const
+// {
+//   auto start = std::chrono::high_resolution_clock::now();
+
+//   std::vector<std::vector<std::tuple<size_t, real>>> exch_list;
+//   exch_list.resize(point_lookup.points_.size());
+
+//   #pragma omp parallel for
+//   for (size_t ind = 0; ind < point_lookup.points_.size(); ++ind) {
+//     // std::vector<std::tuple<size_t, real>> one_exch;
+//     std::map<size_t, real> one_exch_map;
+//     vec3d pos = point_lookup.points_[ind];
+//     for (const auto & [int_vec, int_energy] : ints) {
+//       auto sym_vecs = ApplySymmetry(int_vec, syms);
+//       for (const auto & sym_vec : sym_vecs) {
+//         vec3d partner_pos = pos + sym_vec;
+//         auto [partner_ind, phase] = GetPoint(point_lookup, partner_pos);
+//         if (partner_ind) {
+//           one_exch_map[*partner_ind] = int_energy;
+//         }
+//       }
+//     }
+//     std::vector<std::tuple<size_t, real>> one_exch;
+//     one_exch.insert(one_exch.end(), one_exch_map.begin(), one_exch_map.end());
+//     exch_list[ind] = one_exch;
+//   }
+//   auto stop = std::chrono::high_resolution_clock::now();
+//   global_timer.AddTime(stop - start, Timer::Section::GenExchange);
+//   return exch_list;
+// }
+
+// // Half of spins are {0, 0, -1}, half {0, 0, 1}
+// // Aim is to create a domain wall perpendicular to x- or z- direction
+// std::vector<vec3d> HcpCobaltGenerator::GenerateSpins(const std::vector<vec3d> & positions) const {
+//   std::vector<vec3d> spins;
+//   spins.resize(positions.size());
+//   for (size_t ind = 0; ind < positions.size(); ++ind) {
+//     vec3d pos = positions[ind];
+//     if (domain_wall_direction_ == 'z') {
+//       if (std::get<2>(pos) < std::get<2>(area_dims_)/2) {
+//         spins[ind] = {0, 0, -1};
+//       } else {
+//         spins[ind] = {0, 0, 1};
+//       }
+//     } else if (domain_wall_direction_ == 'x') {
+//       if (std::get<0>(pos) < std::get<0>(area_dims_)/2) {
+//         spins[ind] = {0, 0, -1};
+//       } else {
+//         spins[ind] = {0, 0, 1};
+//       }
+//     } else if (domain_wall_direction_ == '0') {
+//       spins[ind] = {0, 0, 1};
+//     } else {
+//       fprintf(stderr, "unknown domain wall direction: %c\n", domain_wall_direction_);
+//       exit(1);
+//     }
+
+//     // spins[ind] = {0, 0, 1};
+//   }
+//   return spins;
+// }
 
 PointLookup::PointLookup(std::vector<vec3d> point_list)
   : points_(point_list)

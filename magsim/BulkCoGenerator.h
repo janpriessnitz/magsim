@@ -25,10 +25,6 @@ public:
     const std::vector<mat3d> & syms) const;
   std::vector<vec3d> GenerateSpins(const std::vector<vec3d> & positions) const;
 
-  std::pair<std::optional<size_t>, int> GetPoint(const PointLookup & lookup, const vec3d & pos) const;
-
-  std::vector<vec3d> ApplySymmetry(const vec3d & vec, const std::vector<mat3d> & syms) const;
-
   vec3d base1_ = {1, 0, 0};
   vec3d base2_ = {0.5, 0.8660254037844386, 0};
   vec3d base3_ = {0, 0, 1.632993161855452};

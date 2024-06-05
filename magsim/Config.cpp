@@ -10,6 +10,15 @@ Config::Config(const std::string &config_fname) {
   data_ = json::parse(f);
 }
 
+json Config::Get(const std::string & key) const {
+  try {
+    return data_[key];
+  } catch (...) {
+    fprintf(stderr, "failed to get config key \"%s\"\n", key.c_str());
+    throw;
+  }
+} 
+
 annealing_sched_t Config::GetAnnealingSched() const {
   TupleReader reader(data_["annealing_sched_fname"]);
   annealing_sched_t sched;
@@ -21,7 +30,7 @@ annealing_sched_t Config::GetAnnealingSched() const {
 }
 
 std::vector<mat3d> Config::GetSymmetries() const {
-  TupleReader reader = TupleReader(data_["symmetries_fname"]);
+  TupleReader reader = TupleReader(Get("symmetry_fname"));
   std::vector<mat3d> res;
   int n_syms = reader.GetInt(0, 0);
   for (int i_sym = 0; i_sym < n_syms; ++i_sym) {

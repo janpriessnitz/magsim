@@ -1,6 +1,5 @@
 
 #include "Config.h"
-#include "ConfigReader.h"
 #include "SimulationFactory.h"
 #include "SpinDynamics.h"
 #include "Metropolis.h"
@@ -16,34 +15,17 @@
 
 #include <iostream>
 
-SpinLattice LoadLattice(const MapReader &config_reader) {
+SpinLattice LoadLattice(const Config &config) {
 
-  std::string species_str = config_reader.GetString("species");
   std::vector<std::string> species_list;
-  size_t pos = 0;
-  while ((pos = species_str.find(",")) != std::string::npos) {
-      std::string specie = species_str.substr(0, pos);
-      species_list.push_back(specie);
-      species_str.erase(0, pos + 1);
-  }
-  species_list.push_back(species_str);
+  species_list = config.Get("species");
 
+  std::vector<real> anisotropies = config.Get("anisotropy");
   std::unordered_map<std::string, real> species_anisotropy;
-  std::string anisotropy_str = config_reader.GetString("anisotropy");
-  size_t i = 0;
-  for (; (pos = anisotropy_str.find(",")) != std::string::npos; ++i) {
-      std::string tok = anisotropy_str.substr(0, pos);
-      real anis = strtod(tok.c_str(), nullptr);
-      species_anisotropy[species_list[i]] = anis*constants::eV;
-      anisotropy_str.erase(0, pos + 1);
-  }
-  real anis = strtod(anisotropy_str.c_str(), nullptr);
-  species_anisotropy[species_list[i]] = anis*constants::eV;
 
-  // // species_anisotropy["Fe"] = -2.4e-6*constants::eV;  // TODO: find better source for bcc Fe anisotropy
-  // species_anisotropy["Fe"] = -2.4e-6*constants::eV;  // TODO: find better source for bcc Fe anisotropy
-  // // species_anisotropy["Fe"] = 0;  // TODO: find better source for bcc Fe anisotropy
-  // species_anisotropy["Pt"] = 0;
+  for (size_t i = 0; i < species_list.size(); ++i) {
+    species_anisotropy[species_list[i]] = anisotropies[i]*constants::eV;
+  }
 
   SpinLattice res;
   XyzReader xyz_r("pos.xyz");
@@ -75,7 +57,7 @@ SpinLattice LoadLattice(const MapReader &config_reader) {
   res.spins_.resize(res.positions_.size());
   res.avg_spins_.resize(res.positions_.size());
 
-  bool domain_wall = config_reader.GetInt("domain_wall") != 0;
+  bool domain_wall = config.Get("domain_wall").get<int>() != 0;
   for (size_t i = 0; i < res.spins_.size(); ++i) {
     if (std::get<2>(res.positions_[i]) <= z_boundary) {
       if (domain_wall) {
@@ -94,16 +76,7 @@ SpinLattice LoadLattice(const MapReader &config_reader) {
 
 int main(int argc, char **argv) {
 
-  Config c("config.json");
-  std::string a = c.data_.dump();
-  printf("%s\n", a.c_str());
-
-  for (const int &num : c.data_["arr"]) {
-    printf("%d\n", num);
-  }
-
-  std::string efn = c.data_["exchange_fname"];
-  printf("%s\n", efn.c_str());
+  Config c(argv[1]);
 
   std::string out_dir = "output/";
   if (argc > 2) {
@@ -118,12 +91,10 @@ int main(int argc, char **argv) {
     fprintf(stderr, "failed to create output directory %s\n", out_dir.c_str());
   }
 
-  MapReader reader(argv[1]);
-
   printf("generating spin lattice\n");
-  SpinLattice lat = LoadLattice(reader);
+  SpinLattice lat = LoadLattice(c);
 
-  auto sim = ConstructSimulation(reader, &lat);
+  auto sim = ConstructSimulation(c, &lat);
 
   // printf("dumping positions xyz\n");
   // lat.DumpPositions(out_dir + "/positions.out");
@@ -140,8 +111,8 @@ int main(int argc, char **argv) {
 
   printf("starting sim\n");
 
-  int64_t num_step = reader.GetInt("num_step");
-  int64_t num_substep = reader.GetInt("num_substep");
+  int64_t num_step = c.Get("num_step");
+  int64_t num_substep = c.Get("num_substep");
 
   auto start = std::chrono::high_resolution_clock::now();
   for (int j = 0; j < num_step; ++j) {
@@ -153,7 +124,7 @@ int main(int argc, char **argv) {
     printf("%s %lf\n", to_string(avgm).c_str(), mag(avgm));
     bool dump_avgs = true;
     sim->lattice_->DumpLattice(out_dir + "/lattice.out" + std::to_string(j), dump_avgs);
-    sim->lattice_->DumpProfile(out_dir + "/profile.out" + std::to_string(j), reader.GetChar("domain_wall_direction"), dump_avgs);
+    sim->lattice_->DumpProfile(out_dir + "/profile.out" + std::to_string(j), c.Get("domain_wall_direction").get<std::string>()[0], dump_avgs);
     sim->lattice_->ResetAverages();
   }
   auto stop = std::chrono::high_resolution_clock::now();

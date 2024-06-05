@@ -7,6 +7,6 @@
 #include "Simulation.h"
 #include "SpinLattice.h"
 
-std::unique_ptr<Simulation> ConstructSimulation(const MapReader & config, SpinLattice *lattice);
+std::unique_ptr<Simulation> ConstructSimulation(const Config & config, SpinLattice *lattice);
 
 #endif

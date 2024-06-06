@@ -64,7 +64,7 @@ public:
 
     // #pragma omp parallel for
     for (size_t ind = 0; ind < point_lookup.points_.size(); ++ind) {
-      
+
       std::map<size_t, real> one_exch_map;
       vec3d pos = point_lookup.points_[ind];
 
@@ -76,7 +76,7 @@ public:
         } else {
           int_energy = J_;
         }
-        
+
         // printf("%s, %s\n", to_string(pos).c_str(), to_string(partner_pos).c_str());
         auto [partner_ind, phase] = GetPoint(point_lookup, partner_pos);
         if (partner_ind) {

@@ -8,14 +8,14 @@
 
 
 CoRuCoGenerator::CoRuCoGenerator(const Config & config) : LatticeGenerator(config) {
-  area_dims_ = nx_*base1_ + ny_*base2_ + nz_*base3_;
-  Co_anis_ = config.Get("anisotropy");
+  area_dims_ = vec3d({nx_, ny_, nz_})*cell_;
+  Co_anis_ = config.Get<real>("anisotropy");
 
   syms_ = config.GetSymmetries();
   exchange_ints_ = config.GetExchange();
 
-  interface_exchange_energy_ = (config.Get("interface_J").get<real>())*constants::Ry;
-  spin_direction_ = (config.Get("spin_direction").get<std::string>())[0];
+  interface_exchange_energy_ = (config.Get<real>("interface_J"))*constants::Ry;
+  spin_direction_ = config.Get<std::string>("spin_direction")[0];
 }
 
 SpinLattice CoRuCoGenerator::Generate() const {
@@ -51,9 +51,10 @@ std::vector<vec3d> CoRuCoGenerator::GeneratePositions() const {
   for (int curz = 0; curz < nz_; ++curz) {
     for (int cury = 0; cury < ny_; ++cury) {
       for (int curx = 0; curx < nx_; ++curx) {
-        vec3d unit_cell_pos = curx*base1_ + cury*base2_ + curz*base3_;
-        for (const vec3d & spin_pos : spin_pos_list) {
-          vec3d pos = unit_cell_pos + spin_pos;
+        vec3d unit_cell_pos = vec3d({curx, cury, curz})*cell_;
+        for (const vec3d & direct_spin_pos : spin_pos_list_) {
+          vec3d cart_spin_pos = direct_spin_pos*cell_;
+          vec3d pos = unit_cell_pos + cart_spin_pos;
           // make a hole on the interface
           if (abs(center_z - std::get<2>(pos)) < middle_space/2) {
               continue;
@@ -78,7 +79,7 @@ std::vector<std::vector<std::tuple<size_t, real>>> CoRuCoGenerator::GenerateExch
   exch_list.resize(point_lookup.points_.size());
 
   double middle_space = 10;
-  double interface_A_z = nz_*std::get<2>(base3_)/2 - middle_space/2;
+  double interface_A_z = nz_*std::get<2>(std::get<2>(cell_))/2 - middle_space/2;
 
   #pragma omp parallel for
   for (size_t ind = 0; ind < point_lookup.points_.size(); ++ind) {
@@ -91,7 +92,8 @@ std::vector<std::vector<std::tuple<size_t, real>>> CoRuCoGenerator::GenerateExch
         vec3d partner_pos = pos + sym_vec;
         auto [partner_ind, phase] = GetPoint(point_lookup, partner_pos);
         if (partner_ind) {
-          one_exch_map[*partner_ind] = int_energy*phase;
+          // especially for small supercells with periodic boundary conditions, multiple exchange interactions can map to a single pair of atoms -> we need to add them, not replace by the last read interaction
+          one_exch_map[*partner_ind] += int_energy*phase;
         }
       }
     }
@@ -107,7 +109,7 @@ std::vector<std::vector<std::tuple<size_t, real>>> CoRuCoGenerator::GenerateExch
     vec3d pos = point_lookup.points_[ind];
     double tol = 1;
     if (std::get<2>(pos) + tol > interface_A_z && std::get<2>(pos) - tol < interface_A_z) {
-      vec3d partner_pos = pos + 7*base3_;
+      vec3d partner_pos = pos + 7*std::get<2>(cell_);
       auto [partner_ind, phase] = GetPoint(point_lookup, partner_pos);
       if (partner_ind) {
         exch_list[ind].push_back({*partner_ind, interface_exchange_energy_*phase});

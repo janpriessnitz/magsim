@@ -25,13 +25,6 @@ public:
     const std::vector<mat3d> & syms) const;
   std::vector<vec3d> GenerateSpins(const std::vector<vec3d> & positions) const;
 
-  vec3d base1_ = {1, 0, 0};
-  vec3d base2_ = {0.5, 0.8660254037844386, 0};
-  vec3d base3_ = {0, 0, 1.632993161855452};
-  std::vector<vec3d> spin_pos_list = {
-    {0, 0, 0},
-    (1/3.0)*(base1_ + base2_) + (1/2.0)*base3_
-  };
   vec3d area_dims_;
 
   real Co_anis_;  // J

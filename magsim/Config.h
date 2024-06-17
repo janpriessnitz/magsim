@@ -15,14 +15,34 @@ typedef std::vector<annealing_step_t> annealing_sched_t;
 
 class Config {
 public:
-  Config(const std::string &config_fname);
+  Config(int argc, char **argv);
 
-  json Get(const std::string & key) const;
+  template<typename T>
+  T Get(const std::string & key) const {
+    try {
+      return data_.at(key).get<T>();
+    } catch (...) {
+      fprintf(stderr, "failed to get config key \"%s\"\n", key.c_str());
+      throw;
+    }
+  }
+
+  template<typename T>
+  T Get(const std::string & key, T default_value) const {
+    try {
+      return data_.at(key).get<T>();
+    } catch (...) {
+      return default_value;
+    }
+  }
+
   annealing_sched_t GetAnnealingSched() const;
   std::vector<mat3d> GetSymmetries() const;
   std::vector<std::tuple<vec3d, real>> GetExchange() const;
 
   json data_;
+  std::string out_dir_;
+  std::string restart_file_;
 };
 
 #endif // UTIL_H

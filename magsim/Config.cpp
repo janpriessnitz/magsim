@@ -5,19 +5,26 @@
 
 #include <fstream>
 
-Config::Config(const std::string &config_fname) {
-  std::ifstream f(config_fname);
-  data_ = json::parse(f);
-}
-
-json Config::Get(const std::string & key) const {
-  try {
-    return data_[key];
-  } catch (...) {
-    fprintf(stderr, "failed to get config key \"%s\"\n", key.c_str());
-    throw;
+Config::Config(int argc, char **argv) {
+  std::string config_file = "config.json";
+  if (argc > 1) {
+    config_file = argv[1];
   }
-} 
+  std::ifstream f(config_file);
+  data_ = json::parse(f);
+
+  out_dir_ = "output/";
+  if (argc > 2) {
+    out_dir_ = argv[2];
+  }
+  if (!std::filesystem::create_directory(out_dir_)) {
+    fprintf(stderr, "failed to create output directory %s\n", out_dir_.c_str());
+  }
+
+  if (argc > 3) {
+    restart_file_ = argv[3];
+  }
+}
 
 annealing_sched_t Config::GetAnnealingSched() const {
   TupleReader reader(data_["annealing_sched_fname"]);
@@ -30,7 +37,7 @@ annealing_sched_t Config::GetAnnealingSched() const {
 }
 
 std::vector<mat3d> Config::GetSymmetries() const {
-  TupleReader reader = TupleReader(Get("symmetry_fname"));
+  TupleReader reader = TupleReader(Get<std::string>("symmetry_file"));
   std::vector<mat3d> res;
   int n_syms = reader.GetInt(0, 0);
   for (int i_sym = 0; i_sym < n_syms; ++i_sym) {
@@ -45,7 +52,7 @@ std::vector<mat3d> Config::GetSymmetries() const {
 }
 
 std::vector<std::tuple<vec3d, real>> Config::GetExchange() const {
-  TupleReader reader = TupleReader(data_["exchange_fname"]);
+  TupleReader reader = TupleReader(data_["exchange_file"]);
   std::vector<std::tuple<vec3d, real>> res;
   for (int i = 0; i < reader.NumRows(); ++i) {
     vec3d vec = {reader.GetDouble(i, 0), reader.GetDouble(i, 1), reader.GetDouble(i, 2)};

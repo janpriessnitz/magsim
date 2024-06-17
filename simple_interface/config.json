@@ -9,7 +9,7 @@
 	"periodic_y": 1,
 	"periodic_z": -1,
 	"dump_exchange": 1,
-	"domain_wall_direction": "z",
+	"profile_direction": "z",
 	"interface_J": -0.001376,
 	"spin_direction": "z",
 	"mode": "S",

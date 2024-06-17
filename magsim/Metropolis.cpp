@@ -2,8 +2,8 @@
 
 #include "Constants.h"
 
-Metropolis::Metropolis(SpinLattice *lattice)
-  : Simulation(lattice)
+Metropolis::Metropolis(const Config & config, SpinLattice *lattice)
+  : Simulation(config, lattice)
 {
   Heffs_.resize(lattice_->NumSpins());
 }

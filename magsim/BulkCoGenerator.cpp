@@ -36,24 +36,6 @@ SpinLattice BulkCoGenerator::Generate() const {
   return res;
 }
 
-
-std::vector<vec3d> BulkCoGenerator::GeneratePositions() const {
-  std::vector<vec3d> positions;
-  double center_z = std::get<2>(area_dims_)/2;
-  for (int curz = 0; curz < nz_; ++curz) {
-    for (int cury = 0; cury < ny_; ++cury) {
-      for (int curx = 0; curx < nx_; ++curx) {
-        vec3d unit_cell_pos = curx*base1_ + cury*base2_ + curz*base3_;
-        for (const vec3d & spin_pos : spin_pos_list) {
-          vec3d pos = unit_cell_pos + spin_pos;
-          positions.emplace_back(pos);
-        }
-      }
-    }
-  }
-  return positions;
-}
-
 std::vector<std::vector<std::tuple<size_t, real>>> BulkCoGenerator::GenerateExchange(
   const PointLookup & point_lookup,
   const std::vector<std::tuple<vec3d, real>> & ints,

@@ -18,7 +18,6 @@ public:
 
   SpinLattice Generate() const;
 
-  std::vector<vec3d> GeneratePositions() const;
   std::vector<std::vector<std::tuple<size_t, real>>> GenerateExchange(
     const PointLookup & point_lookup,
     const std::vector<std::tuple<vec3d, real>> & ints,

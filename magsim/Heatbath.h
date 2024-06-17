@@ -5,7 +5,7 @@
 
 class Heatbath : public Simulation {
 public:
-  Heatbath(SpinLattice *lattice);
+  Heatbath(const Config & config, SpinLattice *lattice);
 
   virtual void DoStep();
 

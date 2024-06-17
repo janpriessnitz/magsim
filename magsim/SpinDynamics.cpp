@@ -4,9 +4,13 @@
 #include <omp.h>
 #include <chrono>
 
-SpinDynamics::SpinDynamics(SpinLattice *lattice)
-  : Simulation(lattice)
+SpinDynamics::SpinDynamics(const Config & config, SpinLattice *lattice)
+  : Simulation(config, lattice)
 {
+  alpha_ = config.Get<real>("damping");
+  timestep_ = config.Get<real>("timestep");
+  check_timestep_ = config.Get<int>("check_timestep", 0) != 0;
+
   size_t n_spins = lattice_->NumSpins();
   Heffs_.resize(n_spins);
   temp_field_.resize(n_spins);
@@ -104,4 +108,26 @@ void SpinDynamics::GetTemperatureField() {
   }
   auto stop = std::chrono::high_resolution_clock::now();
   global_timer.AddTime(stop - start, Timer::Section::Temperature);
+}
+
+bool SpinDynamics::CheckTimestep() {
+  size_t n_spins = lattice_->NumSpins();
+
+  Heffs_prime_.resize(n_spins);
+  spins_prime_.resize(n_spins);
+
+  lattice_->ComputeHeffs(Heffs_);
+  GetTemperatureField();
+
+  #pragma omp parallel for
+  for (size_t i = 0; i < n_spins; ++i) {
+    vec3d Heff = (-1/constants::mu_B)*Heffs_[i];
+    Heff = Heff + temp_field_[i];
+
+    vec3d oldspin = lattice_->spins_[i];
+    vec3d spin_update = timestep_*GetSpinUpdate(oldspin, Heff);
+    real spin_update_mag = mag(spin_update);
+  }
+  // TODO
+  return true;
 }

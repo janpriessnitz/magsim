@@ -2,8 +2,8 @@
 
 #include "Constants.h"
 
-Heatbath::Heatbath(SpinLattice *lattice)
-  : Simulation(lattice)
+Heatbath::Heatbath(const Config & config, SpinLattice *lattice)
+  : Simulation(config, lattice)
 {
   Heffs_.resize(lattice->NumSpins());
 }

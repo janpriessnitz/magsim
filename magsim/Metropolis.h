@@ -7,7 +7,7 @@ class Metropolis : public Simulation {
 public:
   real kInitialRandomSpinMag = 0.02;
   real kRandomSpinMagReductionSpeed = 0.8; // value between 0, 1; governs how fast is the simulation adapting to the acceptance ratio - close to 1 means very slowly
-  Metropolis(SpinLattice *lattice);
+  Metropolis(const Config & config, SpinLattice *lattice);
 
   virtual void DoStep();
 

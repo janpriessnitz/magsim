@@ -97,8 +97,13 @@ void SpinLattice::DumpLattice(const std::string &fname, bool dump_average) const
 
 void SpinLattice::DumpPositions(const std::string &fname) const {
   FILE *fp = fopen(fname.c_str(), "w");
+  if (fp == nullptr) {
+    fprintf(stderr, "could not open file for dumping positions: %s\n", fname.c_str());
+    return;
+  }
   for (size_t i = 0; i < positions_.size(); ++i) {
     fprintf(fp, "%s\n", to_string(positions_[i]).c_str());
+    // printf("%s\n", to_string(positions_[i]).c_str());
   }
   fclose(fp);
 }

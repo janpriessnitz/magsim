@@ -92,8 +92,14 @@ std::vector<std::vector<std::tuple<size_t, real>>> CoRuCoGenerator::GenerateExch
         vec3d partner_pos = pos + sym_vec;
         auto [partner_ind, phase] = GetPoint(point_lookup, partner_pos);
         if (partner_ind) {
+          // TODO: deal with duplicates
           // especially for small supercells with periodic boundary conditions, multiple exchange interactions can map to a single pair of atoms -> we need to add them, not replace by the last read interaction
-          one_exch_map[*partner_ind] += int_energy*phase;
+          // if (one_exch_map[*partner_ind] != 0 && ind == 0) {
+          //   printf("conflict %lu;%lu;%s;%s;%lg,%lg\n", ind, *partner_ind, to_string(pos).c_str(), to_string(partner_pos).c_str(), int_energy, one_exch_map[*partner_ind]);
+          // }
+          // one_exch_map[*partner_ind] += int_energy*phase;
+
+          one_exch_map[*partner_ind] = int_energy*phase;
         }
       }
     }
